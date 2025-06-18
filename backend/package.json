@@ -20,6 +20,11 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "@langchain/anthropic": "^0.3.22",
+    "@langchain/core": "^0.3.59",
+    "@langchain/google-genai": "^0.2.12",
+    "@langchain/langgraph": "^0.3.4",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.2",
     "@nestjs/core": "^11.0.1",

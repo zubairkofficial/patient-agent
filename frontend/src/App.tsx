@@ -3,11 +3,13 @@ import { AuthLayout } from './components/auth/auth-layout'
 import LoginPage from './pages/auth/login'
 import ForgotPasswordPage from './pages/auth/forgot-password'
 import VerificationCodePage from './pages/auth/verify-code'
+import RegisterForm from './components/auth/register-form'
+import Dashboard from "./pages/Dashboard/index"
 
 export default function App() {
   return (
     <Router>
-      <Routes>
+      <Routes>  
         {/* Public routes */}
         <Route
           path="/login"
@@ -36,6 +38,8 @@ export default function App() {
 
         {/* Default redirect */}
         <Route path="/" element={<Navigate to="/login" replace />} />
+        <Route path='/signup' element={<RegisterForm/>} />
+        <Route path='/dashboard' element={<Dashboard/>} />
       </Routes>
     </Router>
   )

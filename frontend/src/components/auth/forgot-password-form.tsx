@@ -1,9 +1,33 @@
+import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import authService from '@/services/auth.service'
 
 export function ForgotPasswordForm() {
+  const [email, setEmail] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [message, setMessage] = useState('')
+  const [error, setError] = useState('')
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
+    setMessage('')
+    setError('')
+
+    const result = await authService.forgotPassword(email)
+
+    if (result.success) {
+      setMessage('Password reset link sent to your email.')
+    } else {
+      setError(result.message)
+    }
+
+    setLoading(false)
+  }
+
   return (
     <Card className="w-full max-w-[400px] mx-auto">
       <CardHeader className="space-y-1">
@@ -17,18 +41,22 @@ export function ForgotPasswordForm() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="email">Email Address</Label>
             <Input
               id="email"
               placeholder="Enter your email address"
               type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               required
             />
           </div>
-          <Button type="submit" className="w-full">
-            Send Reset Link
+          {error && <p className="text-sm text-red-500">{error}</p>}
+          {message && <p className="text-sm text-green-600">{message}</p>}
+          <Button type="submit" className="w-full" disabled={loading}>
+            {loading ? 'Sending...' : 'Send Reset Link'}
           </Button>
           <div className="text-center">
             <Button variant="link" className="px-0" asChild>

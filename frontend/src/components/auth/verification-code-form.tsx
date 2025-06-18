@@ -1,11 +1,28 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
+import authService from '@/services/auth.service'
+import { useNavigate } from 'react-router-dom'
 
 export function VerificationCodeForm() {
   const [countdown, setCountdown] = useState(49)
   const [code, setCode] = useState(['', '', '', '', '', ''])
+  const [message, setMessage] = useState('')
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+  const navigate = useNavigate()
+
+  // Countdown timer effect
+  useEffect(() => {
+    const timer =
+      countdown > 0 &&
+      setInterval(() => {
+        setCountdown((prev) => prev - 1)
+      }, 1000)
+
+    return () => clearInterval(timer as any)
+  }, [countdown])
 
   const handleCodeChange = (index: number, value: string) => {
     if (value.length <= 1) {
@@ -28,6 +45,35 @@ export function VerificationCodeForm() {
     }
   }
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError('')
+    setMessage('')
+    setLoading(true)
+
+    const otp = code.join('')
+    const email = localStorage.getItem('resetEmail') // Assume email is stored during forgot-password
+
+    if (!email) {
+      setError('Email not found. Please go back and try again.')
+      setLoading(false)
+      return
+    }
+
+    const result = await authService.verifyOtp({ email, otp })
+
+    if (result.success) {
+      setMessage('Code verified! Redirecting to reset password...')
+      setTimeout(() => {
+        navigate('/reset-password') // Redirect to reset password page
+      }, 1500)
+    } else {
+      setError(result.message)
+    }
+
+    setLoading(false)
+  }
+
   return (
     <Card className="w-full max-w-[400px] mx-auto">
       <CardHeader className="space-y-1">
@@ -40,11 +86,11 @@ export function VerificationCodeForm() {
           Enter the 6-digit code sent to your email to reset your password
         </CardDescription>
         <p className="text-center text-sm text-muted-foreground">
-          Code sent to: asdsad@gmail.com
+          Code sent to: {localStorage.getItem('resetEmail') || 'your email'}
         </p>
       </CardHeader>
       <CardContent>
-        <form className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div className="flex justify-between max-w-[360px] mx-auto gap-2">
             {code.map((digit, index) => (
               <Input
@@ -61,8 +107,10 @@ export function VerificationCodeForm() {
               />
             ))}
           </div>
-          <Button type="submit" className="w-full">
-            Verify Code
+          {error && <p className="text-sm text-red-500 text-center">{error}</p>}
+          {message && <p className="text-sm text-green-600 text-center">{message}</p>}
+          <Button type="submit" className="w-full" disabled={loading}>
+            {loading ? 'Verifying...' : 'Verify Code'}
           </Button>
           <div className="text-center space-y-2">
             <p className="text-sm text-muted-foreground">

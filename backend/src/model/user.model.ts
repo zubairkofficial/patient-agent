@@ -1,14 +1,23 @@
-import { Column, Model, Table, DataType } from 'sequelize-typescript';
+import {
+  Column,
+  Model,
+  Table,
+  DataType,
+  PrimaryKey,
+  HasOne
+} from 'sequelize-typescript';
 import { IsEmail, IsNotEmpty, MinLength } from 'class-validator';
+import { Doctor } from './doctorprofile.model';
 
 @Table({
   tableName: 'users',
   timestamps: true,
 })
-export class User extends Model {  @Column({
+export class User extends Model {
+  @PrimaryKey
+  @Column({
     type: DataType.INTEGER,
     autoIncrement: true,
-    primaryKey: true,
   })
   declare id: number;
 
@@ -17,14 +26,14 @@ export class User extends Model {  @Column({
     allowNull: false,
   })
   @IsNotEmpty()
-  firstName: string;
+  declare firstName: string;
 
   @Column({
     type: DataType.STRING,
     allowNull: false,
   })
   @IsNotEmpty()
-  lastName: string;
+  declare lastName: string;
 
   @Column({
     type: DataType.STRING,
@@ -33,7 +42,7 @@ export class User extends Model {  @Column({
   })
   @IsEmail()
   @IsNotEmpty()
-  email: string;
+  declare email: string;
 
   @Column({
     type: DataType.STRING,
@@ -41,40 +50,52 @@ export class User extends Model {  @Column({
   })
   @IsNotEmpty()
   @MinLength(8)
-  password: string;
+  declare password: string;
+
+  @Column({
+    type: DataType.ENUM('admin', 'user'),
+    allowNull: false,
+    defaultValue: 'user',
+  })
+  declare role: 'admin' | 'user';
 
   @Column({
     type: DataType.BOOLEAN,
     defaultValue: false,
   })
-  isEmailVerified: boolean;
-  @Column({
-    type: DataType.STRING,
-    allowNull: true,
-  })
-  verificationToken: string | null;
+  declare isEmailVerified: boolean;
 
   @Column({
     type: DataType.STRING,
     allowNull: true,
   })
-  resetPasswordToken: string | null;
+  declare verificationToken: string | null;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: true,
+  })
+  declare resetPasswordToken: string | null;
 
   @Column({
     type: DataType.DATE,
     allowNull: true,
   })
-  resetPasswordExpires: Date | null;
+  declare resetPasswordExpires: Date | null;
 
   @Column({
     type: DataType.STRING,
     allowNull: true,
   })
-  otp: string | null;
+  declare otp: string | null;
 
   @Column({
     type: DataType.DATE,
     allowNull: true,
   })
-  otpExpires: Date | null;
+  declare otpExpires: Date | null;
+
+  // ✅ One-to-One: User has one Doctor profile
+  @HasOne(() => Doctor)
+  doctorProfile: Doctor;
 }

@@ -4,7 +4,28 @@ import { AppService } from './app.service';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
-import { User } from './models/user.model';
+import { UserController } from './user/user.controller';
+import { UserModule } from './user/user.module';
+import { User } from './model/user.model';
+import { LanggraphController } from './langgraph/langgraph.controller';
+import { LanggraphModule } from './langgraph/langgraph.module';
+import { SectionController } from './section/section.controller';
+import { SectionModule } from './section/section.module';
+import { Doctor } from './model/doctorprofile.model';
+import { SkillsController } from './skills/skills.controller';
+import { SkillsModule } from './skills/skills.module';
+import { StatementController } from './statement/statement.controller';
+import { StatementModule } from './statement/statement.module';
+import { EmotionsController } from './emotions/emotions.controller';
+import { EmotionsModule } from './emotions/emotions.module';
+import { Skills } from './model/skills.model';
+import { Section } from './model/section.model';
+import { JoinSectionSkills } from './model/JointableSectionSkill.model';
+import { Statement } from './model/statement.model';
+import { Emotions } from './model/emotions.model';
+import { joinstatementemotions } from './model/Jointablestatementemotion.model';
+import { ResponseController } from './response/response.controller';
+import { ResponseModule } from './response/response.module';
 
 @Module({
   imports: [
@@ -19,7 +40,7 @@ import { User } from './models/user.model';
       password: process.env.DB_PASSWORD || 'postgres',
       database: process.env.DB_NAME || 'patient_agent',
       autoLoadModels: true,
-      models: [User],
+      models: [User , Doctor , Skills , Section , JoinSectionSkills , Statement , Emotions , joinstatementemotions],
       synchronize: process.env.DB_SYNCHRONIZE == 'true' ? true : false,
       logging: true,
 
@@ -29,8 +50,15 @@ import { User } from './models/user.model';
       },
       retryDelay: 3000,    }),
     AuthModule,
+    UserModule,
+    LanggraphModule,
+    SectionModule,
+    SkillsModule,
+    StatementModule,
+    EmotionsModule,
+    ResponseModule,
   ],
-  controllers: [AppController],
+  controllers: [AppController, UserController, LanggraphController, SectionController, SkillsController, StatementController, EmotionsController, ResponseController],
   providers: [AppService],
 })
 export class AppModule { }

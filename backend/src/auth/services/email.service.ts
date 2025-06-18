@@ -6,13 +6,14 @@ export class EmailService {
   private transporter: nodemailer.Transporter;
 
   constructor() {
+    console.log("asdf", process.env.MAIL_HOST)
     this.transporter = nodemailer.createTransport({
-      // Configure your email service here
-      // Example for Gmail:
-      service: 'gmail',
+      host: `${process.env.MAIL_HOST}`,
+      port: Number(process.env.MAIL_PORT),
+      secure: false,
       auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASSWORD,
+        user: process.env.MAIL_USER,
+        pass: process.env.MAIL_PASSWORD,
       },
     });
   }
@@ -21,7 +22,7 @@ export class EmailService {
     const verificationLink = `${process.env.FRONTEND_URL}/verify-email?token=${token}`;
 
     await this.transporter.sendMail({
-      from: process.env.EMAIL_USER,
+      from: process.env.MAIL_USER,
       to,
       subject: 'Verify Your Email',
       html: `
@@ -36,7 +37,7 @@ export class EmailService {
     const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${token}`;
 
     await this.transporter.sendMail({
-      from: process.env.EMAIL_USER,
+      from: process.env.MAIL_USER,
       to,
       subject: 'Reset Your Password',
       html: `
@@ -50,7 +51,7 @@ export class EmailService {
 
   async sendOtpEmail(to: string, otp: string) {
     await this.transporter.sendMail({
-      from: process.env.EMAIL_USER,
+      from: process.env.MAIL_USER,
       to,
       subject: 'Your OTP Code',
       html: `

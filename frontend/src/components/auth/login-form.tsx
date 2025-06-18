@@ -4,10 +4,52 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
+import authService from '@/services/auth.service'
+import { useNavigate, Link } from 'react-router-dom'
 
 export function LoginForm() {
   const [showPassword, setShowPassword] = useState(false)
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  const navigate = useNavigate()
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    setLoading(true)
+    setError('')
+
+    try {
+      const credentials = { email, password }
+      const result = await authService.login(credentials)
+
+      if (result.success) {
+        // ✅ Save token and user info
+        const token = result.data.token
+        const user = result.data.user // assumes backend returns { token, user }
+
+        localStorage.setItem('token', token)
+        localStorage.setItem('user', JSON.stringify(user))
+
+        navigate('/dashboard')
+      } else {
+        setError(result.message || 'Invalid credentials')
+      }
+    } catch (err) {
+      console.error('Login error:', err)
+      setError('Something went wrong. Please try again.')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
     <Card className="w-full max-w-[400px] mx-auto">
@@ -22,13 +64,15 @@ export function LoginForm() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4" noValidate>
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <Input
               id="email"
               placeholder="doctor@example.com"
               type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               required
             />
           </div>
@@ -37,8 +81,10 @@ export function LoginForm() {
             <div className="relative">
               <Input
                 id="password"
-                type={showPassword ? "text" : "password"}
+                type={showPassword ? 'text' : 'password'}
                 placeholder="Enter your password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 required
               />
               <button
@@ -55,18 +101,17 @@ export function LoginForm() {
               <Checkbox id="remember" />
               <Label htmlFor="remember" className="text-sm">Remember me</Label>
             </div>
-            <Button variant="link" className="px-0" asChild>
-              <a href="/forgot-password">Forgot password?</a>
-            </Button>
+            <Link to="/forgot-password" className="text-sm text-blue-600 hover:underline">
+              Forgot password?
+            </Link>
           </div>
-          <Button type="submit" className="w-full">
-            Sign In
+          {error && <p className="text-sm text-red-500">{error}</p>}
+          <Button type="submit" className="w-full" disabled={loading}>
+            {loading ? 'Signing in...' : 'Sign In'}
           </Button>
           <div className="text-center text-sm">
             Don't have an account?{' '}
-            <Button variant="link" className="px-1" asChild>
-              <a href="/signup">Sign up</a>
-            </Button>
+            <Link to="/signup" className="text-blue-600 hover:underline">Sign up</Link>
           </div>
           <p className="text-xs text-center text-muted-foreground">
             By signing in, you agree to our Terms of Service and Privacy Policy

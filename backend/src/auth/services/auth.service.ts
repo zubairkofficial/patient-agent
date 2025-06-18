@@ -1,43 +1,81 @@
-import { Injectable, UnauthorizedException, BadRequestException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  BadRequestException,
+  ConflictException,
+  Logger,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
-import { User } from '../../models/user.model';
 import { EmailService } from './email.service';
-import { RegisterDto, LoginDto, ForgotPasswordDto, ResetPasswordDto, VerifyEmailDto, VerifyOtpDto } from '../dto/auth.dto';
+import {
+  RegisterDto,
+  LoginDto,
+  ForgotPasswordDto,
+  ResetPasswordDto,
+  VerifyEmailDto,
+  VerifyOtpDto,
+} from '../dto/auth.dto';
+import { Op } from 'sequelize';
+import { User } from '../../model/user.model';
+import { Doctor } from 'src/model/doctorprofile.model';
 
 @Injectable()
 export class AuthService {
+  private logger = new Logger()
   constructor(
     private jwtService: JwtService,
     private emailService: EmailService,
-  ) {}
+  ) { }
 
   async register(registerDto: RegisterDto) {
     const existingUser = await User.findOne({ where: { email: registerDto.email } });
     if (existingUser) {
       throw new ConflictException('Email already registered');
-    }    const hashedPassword = await bcrypt.hash(registerDto.password, 10);
+    }
+
+    const hashedPassword = await bcrypt.hash(registerDto.password, 10);
     const verificationToken = crypto.randomBytes(32).toString('hex');
 
     const user = await User.create({
-      ...registerDto,
+      firstName: registerDto.firstName,
+      lastName: registerDto.lastName,
+      email: registerDto.email,
       password: hashedPassword,
+      role: "user",
       verificationToken,
-    });
+      isEmailVerified: false,
+    }).then(async (user) => {
+      await Doctor.create({
+        userId: user.id
+      })
+      this.logger.log("created doctor")
+    })
 
-    await this.emailService.sendVerificationEmail(user.email, verificationToken);
+
+    // await this.emailService.sendVerificationEmail(user.email, verificationToken);
 
     return { message: 'Registration successful. Please check your email for verification.' };
   }
 
   async login(loginDto: LoginDto) {
-    const user = await User.findOne({ where: { email: loginDto.email } });
-    if (!user) {
+    const email = loginDto.email?.trim();
+    const password = loginDto.password;
+
+    if (!email || !password) {
+      throw new BadRequestException('Email and password are required');
+    }
+
+    const user = await User.findOne({
+      where: { email: { [Op.eq]: email } },
+    });
+
+    if (!user || !user.password) {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const isPasswordValid = await bcrypt.compare(loginDto.password, user.password);
+    const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       throw new UnauthorizedException('Invalid credentials');
     }
@@ -46,14 +84,31 @@ export class AuthService {
       throw new UnauthorizedException('Please verify your email first');
     }
 
-    const token = this.jwtService.sign({ sub: user.id, email: user.email });
-    return { token, user: { id: user.id, email: user.email, firstName: user.firstName, lastName: user.lastName } };
+    const token = this.jwtService.sign({
+      sub: user.id,
+      email: user.email,
+    });
+
+    return {
+      token,
+      user: {
+        id: user.id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+      },
+    };
   }
 
   async verifyEmail(verifyEmailDto: VerifyEmailDto) {
     const user = await User.findOne({ where: { verificationToken: verifyEmailDto.token } });
+
     if (!user) {
       throw new BadRequestException('Invalid verification token');
+    }
+
+    if (user.isEmailVerified) {
+      return { message: 'Email already verified' };
     }
 
     user.isEmailVerified = true;
@@ -67,7 +122,9 @@ export class AuthService {
     const user = await User.findOne({ where: { email: forgotPasswordDto.email } });
     if (!user) {
       throw new BadRequestException('User not found');
-    }    const resetToken = crypto.randomBytes(32).toString('hex');
+    }
+
+    const resetToken = crypto.randomBytes(32).toString('hex');
     user.resetPasswordToken = resetToken;
     user.resetPasswordExpires = new Date(Date.now() + 3600000); // 1 hour
     await user.save();
@@ -81,7 +138,7 @@ export class AuthService {
     const user = await User.findOne({
       where: {
         resetPasswordToken: resetPasswordDto.token,
-        resetPasswordExpires: { $gt: new Date() },
+        resetPasswordExpires: { [Op.gt]: new Date() },
       },
     });
 
@@ -117,7 +174,7 @@ export class AuthService {
     const user = await User.findOne({
       where: {
         email: verifyOtpDto.email,
-        otpExpires: { $gt: new Date() },
+        otpExpires: { [Op.gt]: new Date() },
       },
     });
 
