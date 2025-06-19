@@ -1,10 +1,4 @@
-import {
-    Column,
-    Model,
-    Table,
-ForeignKey,
-Unique,
-} from 'sequelize-typescript';
+import { Column, Model, Table, ForeignKey, Unique } from 'sequelize-typescript';
 import { Section } from './section.model';
 import { Skills } from './skills.model';
 
