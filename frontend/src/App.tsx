@@ -3,13 +3,17 @@ import { AuthLayout } from './components/auth/auth-layout'
 import LoginPage from './pages/auth/login'
 import ForgotPasswordPage from './pages/auth/forgot-password'
 import VerificationCodePage from './pages/auth/verify-code'
+import DashboardPage from './pages/dashboard'
+import StatementsPage from './pages/statements'
+import EmotionsPage from './pages/emotions'
 import RegisterForm from './components/auth/register-form'
-import Dashboard from "./pages/Dashboard/index"
+import SectionsPage from './pages/sections'
+import SkillsPage from './pages/skills'
 
 export default function App() {
   return (
     <Router>
-      <Routes>  
+      <Routes>
         {/* Public routes */}
         <Route
           path="/login"
@@ -35,11 +39,15 @@ export default function App() {
             </AuthLayout>
           }
         />
+        <Route path="/signup" element={<RegisterForm />} />        {/* Protected routes */}        <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/statements" element={<StatementsPage />} />
+        <Route path="/emotions" element={<EmotionsPage />} />
+        <Route path="/sections" element={<SectionsPage />} />
+        <Route path="/skills" element={<SkillsPage />} />
 
-        {/* Default redirect */}
-        <Route path="/" element={<Navigate to="/login" replace />} />
-        <Route path='/signup' element={<RegisterForm/>} />
-        <Route path='/dashboard' element={<Dashboard/>} />
+        {/* Default redirects */}
+        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+        <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>
     </Router>
   )
