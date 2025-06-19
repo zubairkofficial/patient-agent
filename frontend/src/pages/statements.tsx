@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react'
-import { MessageSquare, Search, PencilIcon, Trash2Icon } from 'lucide-react'
-import { StatementDialog } from '@/components/statements/statement-dialog'
-import { DashboardLayout } from '@/components/layout/dashboard-layout'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { useEffect, useState } from "react";
+import { MessageSquare, Search, PencilIcon, Trash2Icon } from "lucide-react";
+import { StatementDialog } from "@/components/statements/statement-dialog";
+import { DashboardLayout } from "@/components/layout/dashboard-layout";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -11,69 +11,69 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table'
-import statementService from '@/services/statement.service'
+} from "@/components/ui/table";
+import statementService from "@/services/statement.service";
 
 interface Statement {
-  id: number
-  description: string
-  skill: string
-  emotion: string
-  section: string
-  created: string
+  id: number;
+  description: string;
+  skill: string;
+  emotion: string;
+  section: string;
+  created: string;
 }
 
 export default function StatementsPage() {
-  const [statements, setStatements] = useState<Statement[]>([])
-  const [searchQuery, setSearchQuery] = useState('')
+  const [statements, setStatements] = useState<Statement[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const fetchStatements = async () => {
-    const response = await statementService.getAllStatements()
+    const response = await statementService.getAllStatements();
     if (response.success) {
-      setStatements(response.data)
+      setStatements(response.data);
     } else {
-      console.error(response.message)
+      console.error(response.message);
     }
-  }
+  };
 
   useEffect(() => {
-    fetchStatements()
-  }, [])
+    fetchStatements();
+  }, []);
 
   const handleCreate = async (data: any) => {
-    const response = await statementService.createStatement(data)
+    const response = await statementService.createStatement(data);
     if (response.success) {
-      fetchStatements()
+      fetchStatements();
     } else {
-      console.error(response.message)
+      console.error(response.message);
     }
-  }
+  };
 
   const handleUpdate = async (id: number, data: any) => {
-    const response = await statementService.updateStatement(id, data)
+    const response = await statementService.updateStatement(id, data);
     if (response.success) {
-      fetchStatements()
+      fetchStatements();
     } else {
-      console.error(response.message)
+      console.error(response.message);
     }
-  }
+  };
 
   const handleDelete = async (id: number) => {
-    const response = await statementService.deleteStatement(id)
+    const response = await statementService.deleteStatement(id);
     if (response.success) {
-      fetchStatements()
+      fetchStatements();
     } else {
-      console.error(response.message)
+      console.error(response.message);
     }
-  }
+  };
 
   const filteredStatements = statements.filter(
-    statement =>
-      statement.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      statement.skill.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      statement.emotion.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      statement.section.toLowerCase().includes(searchQuery.toLowerCase())
-  )
+    (statement) =>
+      statement?.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      statement?.skill.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      statement?.emotion.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      statement?.section.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <DashboardLayout>
@@ -88,10 +88,7 @@ export default function StatementsPage() {
               Manage therapeutic statements and guidance
             </p>
           </div>
-          <StatementDialog
-            mode="add"
-            onSubmit={handleCreate}
-          />
+          <StatementDialog mode="add" onSubmit={handleCreate} />
         </div>
 
         <div className="flex items-center space-x-2">
@@ -131,10 +128,10 @@ export default function StatementsPage() {
                       <StatementDialog
                         mode="edit"
                         defaultValues={{
-                          description: statement.description,
+                          statement: statement.description,
                           skill: statement.skill,
                           emotion: statement.emotion,
-                          section: statement.section,
+                          sectionId: statement.section,
                         }}
                         onSubmit={(data) => handleUpdate(statement.id, data)}
                         trigger={
@@ -164,5 +161,5 @@ export default function StatementsPage() {
         </div>
       </div>
     </DashboardLayout>
-  )
+  );
 }
