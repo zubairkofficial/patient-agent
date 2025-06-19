@@ -62,27 +62,19 @@ class AuthService {
   }
 
   // Login user
-  async login(credentials : any) {
+async login(credentials: { email: string; password: string }) {
     try {
       const response = await api.post('/auth/login', credentials);
-      
-      // Store token and user data in localStorage
-      if (response.data.access_token) {
-        localStorage.setItem('authToken', response.data.access_token);
-        localStorage.setItem('userData', JSON.stringify(response.data.user));
-      }
-      
       return {
         success: true,
         data: response.data,
         message: 'Login successful',
       };
-    } catch (error) {
-      const err = error as any;
+    } catch (error: any) {
       return {
         success: false,
-        message: err.response?.data?.message || 'Login failed',
-        error: err.response?.data,
+        message: error.response?.data?.message || 'Login failed',
+        error: error.response?.data,
       };
     }
   }

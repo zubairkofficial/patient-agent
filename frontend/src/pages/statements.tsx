@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { MessageSquare, Search, PencilIcon, Trash2Icon } from 'lucide-react'
 import { StatementDialog } from '@/components/statements/statement-dialog'
 import { DashboardLayout } from '@/components/layout/dashboard-layout'
@@ -12,6 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import statementService from '@/services/statement.service'
 
 interface Statement {
   id: number
@@ -20,38 +21,51 @@ interface Statement {
   emotion: string
   section: string
   created: string
-  actions?: React.ReactNode
 }
 
-const statements: Statement[] = [
-  {
-    id: 1,
-    description: 'Take three deep breaths, inhaling for 4 counts and exhaling for 6 counts',
-    skill: 'Mindfulness Practice',
-    emotion: 'Anxiety',
-    section: 'Breathing Techniques',
-    created: '2024-01-15',
-  },
-  {
-    id: 2,
-    description: 'Notice five things you can see around you',
-    skill: 'Grounding',
-    emotion: 'Anxiety',
-    section: 'Initial Assessment',
-    created: '2024-01-14',
-  },
-  {
-    id: 3,
-    description: 'Sit comfortably, close your eyes, and focus on your breath',
-    skill: 'Mindfulness Practice',
-    emotion: 'Calm',
-    section: 'Daily Meditation',
-    created: '2024-01-13',
-  },
-]
-
 export default function StatementsPage() {
+  const [statements, setStatements] = useState<Statement[]>([])
   const [searchQuery, setSearchQuery] = useState('')
+
+  const fetchStatements = async () => {
+    const response = await statementService.getAllStatements()
+    if (response.success) {
+      setStatements(response.data)
+    } else {
+      console.error(response.message)
+    }
+  }
+
+  useEffect(() => {
+    fetchStatements()
+  }, [])
+
+  const handleCreate = async (data: any) => {
+    const response = await statementService.createStatement(data)
+    if (response.success) {
+      fetchStatements()
+    } else {
+      console.error(response.message)
+    }
+  }
+
+  const handleUpdate = async (id: number, data: any) => {
+    const response = await statementService.updateStatement(id, data)
+    if (response.success) {
+      fetchStatements()
+    } else {
+      console.error(response.message)
+    }
+  }
+
+  const handleDelete = async (id: number) => {
+    const response = await statementService.deleteStatement(id)
+    if (response.success) {
+      fetchStatements()
+    } else {
+      console.error(response.message)
+    }
+  }
 
   const filteredStatements = statements.filter(
     statement =>
@@ -73,12 +87,10 @@ export default function StatementsPage() {
             <p className="text-muted-foreground">
               Manage therapeutic statements and guidance
             </p>
-          </div>          <StatementDialog
+          </div>
+          <StatementDialog
             mode="add"
-            onSubmit={(data) => {
-              console.log('Create statement:', data)
-              // API integration will go here
-            }}
+            onSubmit={handleCreate}
           />
         </div>
 
@@ -115,7 +127,8 @@ export default function StatementsPage() {
                   <TableCell>{statement.section}</TableCell>
                   <TableCell>{statement.created}</TableCell>
                   <TableCell>
-                    <div className="flex items-center gap-2">                      <StatementDialog
+                    <div className="flex items-center gap-2">
+                      <StatementDialog
                         mode="edit"
                         defaultValues={{
                           description: statement.description,
@@ -123,10 +136,7 @@ export default function StatementsPage() {
                           emotion: statement.emotion,
                           section: statement.section,
                         }}
-                        onSubmit={(data) => {
-                          console.log('Update statement:', statement.id, data)
-                          // API integration will go here
-                        }}
+                        onSubmit={(data) => handleUpdate(statement.id, data)}
                         trigger={
                           <Button
                             variant="ghost"
@@ -141,10 +151,7 @@ export default function StatementsPage() {
                         variant="ghost"
                         size="icon"
                         className="h-8 w-8 text-destructive"
-                        onClick={() => {
-                          console.log('Delete statement:', statement.id)
-                          // API integration will go here
-                        }}
+                        onClick={() => handleDelete(statement.id)}
                       >
                         <Trash2Icon className="h-4 w-4" />
                       </Button>

@@ -1,6 +1,7 @@
 import axios from 'axios';
+import { jwtDecode } from 'jwt-decode';
 
-const API_BASE_URL = 'http://localhost:3000'; // Update to your backend URL if needed
+const API_BASE_URL = 'http://localhost:3000/statement'; // Update as needed
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -11,24 +12,41 @@ const api = axios.create({
 
 // Attach token if available
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('authToken');
+  const token = localStorage.getItem('token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
 });
 
+// Helper to get user role from token
+function getUserRole(): string | null {
+  const token = localStorage.getItem('token');
+  if (!token) return null;
+
+  try {
+    const decoded: any = jwtDecode(token);
+    return decoded?.role || null;
+  } catch (error) {
+    console.error('Failed to decode token', error);
+    return null;
+  }
+}
+
 class StatementService {
-  // ✅ Create new statement
-  async createStatement(data:any) {
+  getRole() {
+    return getUserRole();
+  }
+
+  async createStatement(data: any) {
     try {
-      const res = await api.post('/statements', data);
+      const res = await api.post('/', data);
       return {
         success: true,
         data: res.data,
         message: 'Statement created successfully',
       };
-    } catch (error:any) {
+    } catch (error: any) {
       return {
         success: false,
         message: error.response?.data?.message || 'Failed to create statement',
@@ -37,10 +55,9 @@ class StatementService {
     }
   }
 
-  // ✅ Get all statements
   async getAllStatements() {
     try {
-      const res = await api.get('/statements');
+      const res = await api.get('/get');
       return {
         success: true,
         data: res.data,
@@ -55,10 +72,9 @@ class StatementService {
     }
   }
 
-  // ✅ Get statement by ID
   async getStatementById(id: number) {
     try {
-      const res = await api.get(`/statements/${id}`);
+      const res = await api.get(`/get/${id}`);
       return {
         success: true,
         data: res.data,
@@ -73,10 +89,9 @@ class StatementService {
     }
   }
 
-  // ✅ Get statements by section ID
   async getStatementsBySectionId(sectionId: number) {
     try {
-      const res = await api.get(`/statements/section/${sectionId}`);
+      const res = await api.get(`/section/${sectionId}`);
       return {
         success: true,
         data: res.data,
@@ -91,10 +106,9 @@ class StatementService {
     }
   }
 
-  // ✅ Update a statement
   async updateStatement(id: number, data: any) {
     try {
-      const res = await api.put(`/statements/${id}`, data);
+      const res = await api.put(`/update/${id}`, data);
       return {
         success: true,
         data: res.data,
@@ -109,10 +123,9 @@ class StatementService {
     }
   }
 
-  // ✅ Delete a statement
   async deleteStatement(id: number) {
     try {
-      const res = await api.delete(`/statements/${id}`);
+      const res = await api.delete(`/delete/${id}`);
       return {
         success: true,
         data: res.data,

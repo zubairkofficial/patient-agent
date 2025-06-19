@@ -12,7 +12,10 @@ export class StatementService {
   ) {}
 
   async create(dto: CreateStatementDto) {
-    return this.statementModel.create({ ...dto });
+    return this.statementModel.create({ 
+      statement: dto.statement,
+      sectionId: dto.sectionId
+     });
   }
 
   async findAll() {

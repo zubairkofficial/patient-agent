@@ -1,9 +1,10 @@
-import { useState } from 'react'
-import { Layers, Search, PencilIcon, Trash2Icon } from 'lucide-react'
-import { SectionDialog } from '@/components/sections/section-dialog'
-import { DashboardLayout } from '@/components/layout/dashboard-layout'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+// src/pages/SectionsPage.tsx
+import { useEffect, useState } from 'react';
+import { Layers, Search, PencilIcon, Trash2Icon } from 'lucide-react';
+import { SectionDialog } from '@/components/sections/section-dialog';
+import { DashboardLayout } from '@/components/layout/dashboard-layout';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
   Table,
   TableBody,
@@ -11,54 +12,69 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table'
+} from '@/components/ui/table';
+import sectionService from '@/services/section.service';
 
 interface Section {
-  id: number
-  title: string
-  skill: string
-  category: string
-  description: string
-  created: string
+  id: number;
+  title: string;
+  skill: string;
+  category: string;
+  description: string;
+  created: string;
 }
 
-const sections: Section[] = [
-  {
-    id: 1,
-    title: 'Initial Assessment',
-    skill: 'Anxiety Management',
-    category: 'Assessment',
-    description: "Comprehensive evaluation of patient's current anxiety levels and triggers",
-    created: '2024-01-15',
-  },
-  {
-    id: 2,
-    title: 'Breathing Techniques',
-    skill: 'Anxiety Management',
-    category: 'Practice',
-    description: 'Exercises for immediate anxiety relief',
-    created: '2024-01-14',
-  },
-  {
-    id: 3,
-    title: 'Daily Meditation',
-    skill: 'Mindfulness Practice',
-    category: 'Practice',
-    description: 'Guided meditation sessions for beginners',
-    created: '2024-01-13',
-  },
-]
-
 export default function SectionsPage() {
-  const [searchQuery, setSearchQuery] = useState('')
+  const [sections, setSections] = useState<Section[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  useEffect(() => {
+    fetchSections();
+  }, []);
+
+  const fetchSections = async () => {
+    const response = await sectionService.getAllSections();
+    if (response.success) {
+      setSections(response.data);
+    } else {
+      console.error(response.message);
+    }
+  };
+
+  const handleCreate = async (data: any) => {
+    const response = await sectionService.createSection(data);
+    if (response.success) {
+      fetchSections();
+    } else {
+      console.error(response.message);
+    }
+  };
+
+  const handleUpdate = async (id: number, data: any) => {
+    const response = await sectionService.updateSection(id, data);
+    if (response.success) {
+      fetchSections();
+    } else {
+      console.error(response.message);
+    }
+  };
+
+  const handleDelete = async (id: number) => {
+    const response = await sectionService.deleteSection(id);
+    if (response.success) {
+      fetchSections();
+    } else {
+      console.error(response.message);
+    }
+  };
 
   const filteredSections = sections.filter(
-    section =>
+    (section) =>
       section.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       section.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
       section.skill.toLowerCase().includes(searchQuery.toLowerCase()) ||
       section.category.toLowerCase().includes(searchQuery.toLowerCase())
-  )
+  );
 
   return (
     <DashboardLayout>
@@ -72,13 +88,8 @@ export default function SectionsPage() {
             <p className="text-muted-foreground">
               Manage therapeutic sections and categories
             </p>
-          </div>          <SectionDialog
-            mode="add"
-            onSubmit={(data) => {
-              console.log('Create section:', data)
-              // API integration will go here
-            }}
-          />
+          </div>
+          <SectionDialog mode="add" onSubmit={handleCreate} />
         </div>
 
         <div className="flex items-center space-x-2">
@@ -122,7 +133,8 @@ export default function SectionsPage() {
                   <TableCell>{section.description}</TableCell>
                   <TableCell>{section.created}</TableCell>
                   <TableCell>
-                    <div className="flex items-center gap-2">                      <SectionDialog
+                    <div className="flex items-center gap-2">
+                      <SectionDialog
                         mode="edit"
                         defaultValues={{
                           title: section.title,
@@ -130,16 +142,9 @@ export default function SectionsPage() {
                           category: section.category,
                           description: section.description,
                         }}
-                        onSubmit={(data) => {
-                          console.log('Update section:', section.id, data)
-                          // API integration will go here
-                        }}
+                        onSubmit={(data) => handleUpdate(section.id, data)}
                         trigger={
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8"
-                          >
+                          <Button variant="ghost" size="icon" className="h-8 w-8">
                             <PencilIcon className="h-4 w-4" />
                           </Button>
                         }
@@ -148,10 +153,7 @@ export default function SectionsPage() {
                         variant="ghost"
                         size="icon"
                         className="h-8 w-8 text-destructive"
-                        onClick={() => {
-                          console.log('Delete section:', section.id)
-                          // API integration will go here
-                        }}
+                        onClick={() => handleDelete(section.id)}
                       >
                         <Trash2Icon className="h-4 w-4" />
                       </Button>
@@ -164,5 +166,5 @@ export default function SectionsPage() {
         </div>
       </div>
     </DashboardLayout>
-  )
+  );
 }

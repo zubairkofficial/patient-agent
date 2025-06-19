@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   Dialog,
   DialogContent,
@@ -16,42 +16,32 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import sectionService from '../../services/section.service'
+
+interface Section {
+  id: number
+  name: string
+}
 
 interface StatementDialogProps {
   mode: 'add' | 'edit'
   defaultValues?: {
-    description: string
+    statement: string
     skill: string
     emotion: string
-    section: string
+    sectionId: string | number
   }
   onSubmit: (data: {
-    description: string
+    statement: string
     skill: string
     emotion: string
-    section: string
+    sectionId: number
   }) => void
   trigger?: React.ReactNode
 }
 
-const skills = [
-  'Anxiety Management',
-  'Mindfulness Practice',
-  'Sleep Hygiene',
-]
-
-const emotions = [
-  'Anxiety',
-  'Stress',
-  'Calm',
-  'Joy',
-]
-
-const sections = [
-  'Initial Assessment',
-  'Breathing Techniques',
-  'Daily Meditation',
-]
+const skills = ['Anxiety Management', 'Mindfulness Practice', 'Sleep Hygiene']
+const emotions = ['Anxiety', 'Stress', 'Calm', 'Joy']
 
 export function StatementDialog({
   mode,
@@ -60,14 +50,56 @@ export function StatementDialog({
   trigger,
 }: StatementDialogProps) {
   const [open, setOpen] = useState(false)
-  const [description, setDescription] = useState(defaultValues?.description || '')
-  const [skill, setSkill] = useState(defaultValues?.skill || '')
-  const [emotion, setEmotion] = useState(defaultValues?.emotion || '')
-  const [section, setSection] = useState(defaultValues?.section || '')
+  const [statement, setStatement] = useState('')
+  const [skill, setSkill] = useState('')
+  const [emotion, setEmotion] = useState('')
+  const [sectionId, setSectionId] = useState<number | null>(null)
+  const [sections, setSections] = useState<Section[]>([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const fetchSections = async () => {
+    setLoading(true)
+    try {
+      const response = await sectionService.getAllSections()
+      if (response.success) {
+        setSections(response.data)
+        // Pre-select matching section if editing
+        if (defaultValues?.sectionId) {
+          const found = response.data.find(
+            (s: Section) =>
+              s.id === Number(defaultValues.sectionId) ||
+              s.name === defaultValues.sectionId
+          )
+          if (found) setSectionId(found.id)
+        }
+      } else {
+        setError(response.message)
+      }
+    } catch {
+      setError('Failed to load sections')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    if (open) {
+      setStatement(defaultValues?.statement || '')
+      setSkill(defaultValues?.skill || '')
+      setEmotion(defaultValues?.emotion || '')
+      setSectionId(null)
+      fetchSections()
+    }
+  }, [open])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    onSubmit({ description, skill, emotion, section })
+    if (!statement || !skill || !emotion || sectionId === null) {
+      alert('Please fill out all fields.')
+      return
+    }
+    onSubmit({ statement, skill, emotion, sectionId })
     setOpen(false)
   }
 
@@ -91,29 +123,30 @@ export function StatementDialog({
               : 'Update the statement information below.'}
           </DialogDescription>
         </DialogHeader>
+
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Statement Field */}
           <div className="space-y-2">
-            <label htmlFor="description" className="text-sm font-medium">
-              Description
+            <label htmlFor="statement" className="text-sm font-medium">
+              Statement
             </label>
             <Textarea
-              id="description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Enter statement description"
+              id="statement"
+              value={statement}
+              onChange={(e) => setStatement(e.target.value)}
+              placeholder="Enter therapeutic statement"
               required
             />
           </div>
+
+          {/* Skill, Emotion, Section */}
           <div className="grid grid-cols-3 gap-4">
+            {/* Skill */}
             <div className="space-y-2">
               <label htmlFor="skill" className="text-sm font-medium">
                 Skill
               </label>
-              <Select
-                value={skill}
-                onValueChange={setSkill}
-                required
-              >
+              <Select value={skill} onValueChange={setSkill}>
                 <SelectTrigger id="skill">
                   <SelectValue placeholder="Select skill" />
                 </SelectTrigger>
@@ -126,15 +159,13 @@ export function StatementDialog({
                 </SelectContent>
               </Select>
             </div>
+
+            {/* Emotion */}
             <div className="space-y-2">
               <label htmlFor="emotion" className="text-sm font-medium">
                 Emotion
               </label>
-              <Select
-                value={emotion}
-                onValueChange={setEmotion}
-                required
-              >
+              <Select value={emotion} onValueChange={setEmotion}>
                 <SelectTrigger id="emotion">
                   <SelectValue placeholder="Select emotion" />
                 </SelectTrigger>
@@ -147,28 +178,32 @@ export function StatementDialog({
                 </SelectContent>
               </Select>
             </div>
+
+            {/* Section */}
             <div className="space-y-2">
               <label htmlFor="section" className="text-sm font-medium">
                 Section
               </label>
               <Select
-                value={section}
-                onValueChange={setSection}
-                required
+                value={sectionId !== null ? sectionId.toString() : ''}
+                onValueChange={(value) => setSectionId(Number(value))}
               >
                 <SelectTrigger id="section">
-                  <SelectValue placeholder="Select section" />
+                  <SelectValue placeholder={loading ? 'Loading...' : 'Select section'} />
                 </SelectTrigger>
                 <SelectContent>
                   {sections.map((s) => (
-                    <SelectItem key={s} value={s}>
-                      {s}
+                    <SelectItem key={s.id} value={s.id.toString()}>
+                      {s.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
+              {error && <p className="text-sm text-red-600">{error}</p>}
             </div>
           </div>
+
+          {/* Buttons */}
           <div className="flex justify-end gap-2">
             <Button
               type="button"

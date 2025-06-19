@@ -1,34 +1,37 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:3000'; // Replace with deployed URL
+const API_BASE_URL = 'http://localhost:3000'; // Replace with your deployed URL
 
+ const token = localStorage.getItem('token');
+console.log("toke", token)
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
+    'Authorization' : `Bearer ${token}`
   },
 });
 
-// Automatically attach token if available
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('authToken');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
+// // ✅ Attach token to every request
+// api.interceptors.request.use((config) => {
+//   const token = localStorage.getItem('authToken');
+//   if (token) {
+//     config.headers.Authorization = `Bearer ${token}`;
+//   }
+//   return config;
+// });
 
 class SkillsService {
-  // ✅ Create a skill
-  async createSkill(skillData : any) {
+  // ✅ Create a skill (admin only)
+  async createSkill(skillData: any) {
     try {
-      const response = await api.post('/skills', skillData);
+      const response = await api.post('/skills/', skillData);
       return {
         success: true,
         data: response.data,
         message: 'Skill created successfully',
       };
-    } catch (error : any) {
+    } catch (error: any) {
       return {
         success: false,
         message: error.response?.data?.message || 'Failed to create skill',
@@ -37,16 +40,16 @@ class SkillsService {
     }
   }
 
-  // ✅ Get all skills
+  // ✅ Get all skills (public or user/admin)
   async getAllSkills() {
     try {
-      const response = await api.get('/skills');
+      const response = await api.get('/skills/get');
       return {
         success: true,
         data: response.data,
         message: 'Skills fetched successfully',
       };
-    } catch (error : any) {
+    } catch (error: any) {
       return {
         success: false,
         message: error.response?.data?.message || 'Failed to fetch skills',
@@ -56,15 +59,15 @@ class SkillsService {
   }
 
   // ✅ Get skill by ID
-  async getSkillById(id : number) {
+  async getSkillById(id: number) {
     try {
-      const response = await api.get(`/skills/${id}`);
+      const response = await api.get(`/skills/get/${id}`);
       return {
         success: true,
         data: response.data,
         message: 'Skill fetched successfully',
       };
-    } catch (error : any) {
+    } catch (error: any) {
       return {
         success: false,
         message: error.response?.data?.message || 'Failed to fetch skill',
@@ -73,10 +76,10 @@ class SkillsService {
     }
   }
 
-  // ✅ Update skill
-  async updateSkill(id : number, skillData: any) {
+  // ✅ Update skill (admin only)
+  async updateSkill(id: number, skillData: any) {
     try {
-      const response = await api.put(`/skills/${id}`, skillData);
+      const response = await api.put(`/skills/update/${id}`, skillData);
       return {
         success: true,
         data: response.data,
@@ -91,10 +94,10 @@ class SkillsService {
     }
   }
 
-  // ✅ Delete skill
+  // ✅ Delete skill (admin only)
   async deleteSkill(id: number) {
     try {
-      const response = await api.delete(`/skills/${id}`);
+      const response = await api.delete(`/skills/delete/${id}`);
       return {
         success: true,
         data: response.data,

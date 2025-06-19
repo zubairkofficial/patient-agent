@@ -11,7 +11,7 @@ const api = axios.create({
 
 // Attach token if needed
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('authToken');
+  const token = localStorage.getItem('token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -22,7 +22,7 @@ class SectionService {
   // ✅ Create a section (admin only)
   async createSection(sectionData : any) {
     try {
-      const response = await api.post('/section', sectionData);
+      const response = await api.post('/section/', sectionData);
       return {
         success: true,
         data: response.data,
@@ -41,7 +41,7 @@ class SectionService {
   // ✅ Get all sections
   async getAllSections() {
     try {
-      const response = await api.get('/section');
+      const response = await api.get('/section/');
       return {
         success: true,
         data: response.data,

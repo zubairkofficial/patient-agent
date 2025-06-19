@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Brain, Search, PencilIcon, Trash2Icon } from 'lucide-react'
 import { SkillDialog } from '@/components/skills/skill-dialog'
 import { DashboardLayout } from '@/components/layout/dashboard-layout'
@@ -12,6 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import skillsService from './../services/skills.service' // ✅ Import service
 
 interface Skill {
   id: number
@@ -21,32 +22,50 @@ interface Skill {
   updated: string
 }
 
-const skills: Skill[] = [
-  {
-    id: 1,
-    title: 'Anxiety Management',
-    description: 'Techniques and strategies for managing anxiety and stress in daily life',
-    created: '2024-01-15',
-    updated: '2024-01-15',
-  },
-  {
-    id: 2,
-    title: 'Mindfulness Practice',
-    description: 'Mindfulness exercises and meditation techniques for mental wellness',
-    created: '2024-01-14',
-    updated: '2024-01-16',
-  },
-  {
-    id: 3,
-    title: 'Sleep Hygiene',
-    description: 'Best practices for improving sleep quality and establishing healthy sleep patterns',
-    created: '2024-01-13',
-    updated: '2024-01-13',
-  },
-]
-
 export default function SkillsPage() {
+  const [skills, setSkills] = useState<Skill[]>([])
   const [searchQuery, setSearchQuery] = useState('')
+
+  // ✅ Load skills initially
+  useEffect(() => {
+    fetchSkills()
+  }, [])
+
+  const fetchSkills = async () => {
+    const response = await skillsService.getAllSkills()
+    if (response.success) {
+      setSkills(response.data)
+    } else {
+      console.error(response.message)
+    }
+  }
+
+  const handleCreate = async (data: { title: string; description: string }) => {
+    const response = await skillsService.createSkill(data)
+    if (response.success) {
+      fetchSkills()
+    } else {
+      console.error(response.message)
+    }
+  }
+
+  const handleUpdate = async (id: number, data: { title: string; description: string }) => {
+    const response = await skillsService.updateSkill(id, data)
+    if (response.success) {
+      fetchSkills()
+    } else {
+      console.error(response.message)
+    }
+  }
+
+  const handleDelete = async (id: number) => {
+    const response = await skillsService.deleteSkill(id)
+    if (response.success) {
+      fetchSkills()
+    } else {
+      console.error(response.message)
+    }
+  }
 
   const filteredSkills = skills.filter(
     skill =>
@@ -66,12 +85,10 @@ export default function SkillsPage() {
             <p className="text-muted-foreground">
               Manage therapeutic skills and techniques
             </p>
-          </div>          <SkillDialog
+          </div>
+          <SkillDialog
             mode="add"
-            onSubmit={(data) => {
-              console.log('Create skill:', data)
-              // API integration will go here
-            }}
+            onSubmit={handleCreate}
           />
         </div>
 
@@ -106,16 +123,14 @@ export default function SkillsPage() {
                   <TableCell>{skill.created}</TableCell>
                   <TableCell>{skill.updated}</TableCell>
                   <TableCell>
-                    <div className="flex items-center gap-2">                      <SkillDialog
+                    <div className="flex items-center gap-2">
+                      <SkillDialog
                         mode="edit"
                         defaultValues={{
                           title: skill.title,
                           description: skill.description,
                         }}
-                        onSubmit={(data) => {
-                          console.log('Update skill:', skill.id, data)
-                          // API integration will go here
-                        }}
+                        onSubmit={(data) => handleUpdate(skill.id, data)}
                         trigger={
                           <Button
                             variant="ghost"
@@ -130,10 +145,7 @@ export default function SkillsPage() {
                         variant="ghost"
                         size="icon"
                         className="h-8 w-8 text-destructive"
-                        onClick={() => {
-                          console.log('Delete skill:', skill.id)
-                          // API integration will go here
-                        }}
+                        onClick={() => handleDelete(skill.id)}
                       >
                         <Trash2Icon className="h-4 w-4" />
                       </Button>

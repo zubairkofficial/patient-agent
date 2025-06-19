@@ -12,7 +12,7 @@ export class SectionService {
         @InjectModel(Skills) private skillsModel: typeof Skills,
     ) { }
 
-    async create(sectionDto: SectionDto, role: 'admin') {
+    async create(sectionDto: SectionDto) {
         const section = await this.sectionModel.create({
             title: sectionDto.title,
             description: sectionDto.description,
@@ -33,8 +33,7 @@ export class SectionService {
         return await this.sectionModel.findAll({ include: [Skills] });
     }
 
-    async update(id: number, sectionDto: any, role: string) {
-        if (role !== 'admin') throw new ForbiddenException('Only admin can update');
+    async update(id: number, sectionDto: any) {
         const section = await this.sectionModel.findByPk(id);
         if (!section) throw new NotFoundException('Section not found');
 
@@ -46,8 +45,7 @@ export class SectionService {
         return section;
     }
 
-    async delete(id: number, role: string) {
-        if (role !== 'admin') throw new ForbiddenException('Only admin can delete');
+    async delete(id: number) {
         const section = await this.sectionModel.findByPk(id);
         if (!section) throw new NotFoundException('Section not found');
         await section.destroy();
