@@ -2,7 +2,8 @@ import {
     Column,
     Model,
     Table,
-ForeignKey
+ForeignKey,
+Unique,
 } from 'sequelize-typescript';
 import { Section } from './section.model';
 import { Skills } from './skills.model';
@@ -12,9 +13,11 @@ import { Skills } from './skills.model';
 export class JoinSectionSkills extends Model {
   @ForeignKey(() => Section)
   @Column
+  @Unique
   sectionId: number;
 
   @ForeignKey(() => Skills)
   @Column
+  @Unique
   skillId: number;
 }
