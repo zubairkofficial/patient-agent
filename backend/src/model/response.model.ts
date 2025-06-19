@@ -6,7 +6,7 @@ import {
   PrimaryKey,
   ForeignKey
 } from 'sequelize-typescript';
-import { IsNotEmpty, MinLength } from 'class-validator';
+import { IsNotEmpty } from 'class-validator';
 import { Doctor } from './doctorprofile.model';
 import { Statement } from './statement.model';
 

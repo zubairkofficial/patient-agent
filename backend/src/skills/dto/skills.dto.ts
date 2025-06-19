@@ -1,11 +1,19 @@
-import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsNotEmpty , IsOptional } from 'class-validator';
 
 export class CreateSkillDto {
-  @IsString()
   @IsNotEmpty()
   title: string;
 
-  @IsString()
+  @IsNotEmpty()
+  description: string;
+}
+
+export class UpdateSkillDto {
   @IsOptional()
+  @IsNotEmpty()
+  title?: string;
+
+  @IsOptional()
+  @IsNotEmpty()
   description?: string;
 }

@@ -13,33 +13,35 @@ export default function AgentChatPage() {
   const [loading, setLoading] = useState(false);
 
   const sendMessage = async () => {
-    if (!input.trim()) return;
+    if (!input.trim() || loading) return;
     setLoading(true);
 
     try {
-      // Step 1: Ask agent
+      // Step 1: Ask
       const askRes = await axios.get(`${API_BASE}/ask`, {
         params: { prompt: input },
       });
 
-      const response = askRes.data.response;
+      const botResponse = askRes.data.response;
 
       setHistory((prev) => [
         ...prev,
         { role: 'user', content: input },
-        { role: 'bot', content: response },
+        { role: 'bot', content: botResponse },
       ]);
 
-      // Step 2: Handle tool execution confirmation
-      if (response.toLowerCase().includes('do you want me to proceed')) {
+      // Step 2: Optional confirmation
+      if (botResponse.toLowerCase().includes('do you want me to proceed')) {
         const confirmRes = await axios.get(`${API_BASE}/confirm`, {
           params: { prompt: input, confirm: 'yes' },
         });
 
+        const confirmBot = confirmRes.data.response;
+
         setHistory((prev) => [
           ...prev,
           { role: 'user', content: 'yes' },
-          { role: 'bot', content: confirmRes.data.response },
+          { role: 'bot', content: confirmBot },
         ]);
       }
 
@@ -84,7 +86,7 @@ export default function AgentChatPage() {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
-          placeholder="Ask something..."
+          placeholder="Ask something like: Add 5 and 8"
           disabled={loading}
         />
         <Button onClick={sendMessage} disabled={loading}>
