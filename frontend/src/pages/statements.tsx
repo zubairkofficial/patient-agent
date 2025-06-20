@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react'
-import { MessageSquare, Search, PencilIcon, Trash2Icon } from 'lucide-react'
-import { StatementDialog } from '@/components/statements/statement-dialog'
-import { DashboardLayout } from '@/components/layout/dashboard-layout'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { useEffect, useState } from "react";
+import { MessageSquare, Search, PencilIcon, Trash2Icon } from "lucide-react";
+import { StatementDialog } from "@/components/statements/statement-dialog";
+import { DashboardLayout } from "@/components/layout/dashboard-layout";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -48,7 +48,7 @@ export default function StatementsPage() {
   const [searchQuery, setSearchQuery] = useState('')
 
   const fetchStatements = async () => {
-    const response = await statementService.getAllStatements()
+    const response = await statementService.getAllStatements();
     if (response.success) {
       setStatements(response.data)
       console.log('statment',response)
@@ -73,9 +73,9 @@ export default function StatementsPage() {
       setEmotions(response.data)
       console.log('emotions',response)
     } else {
-      console.error(response.message)
+      console.error(response.message);
     }
-  }
+  };
 
   useEffect(() => {
     fetchStatements()
@@ -84,32 +84,32 @@ export default function StatementsPage() {
   }, [])
 
   const handleCreate = async (data: any) => {
-    const response = await statementService.createStatement(data)
+    const response = await statementService.createStatement(data);
     if (response.success) {
-      fetchStatements()
+      fetchStatements();
     } else {
-      console.error(response.message)
+      console.error(response.message);
     }
-  }
+  };
 
   const handleUpdate = async (id: number, data: any) => {
-    const response = await statementService.updateStatement(id, data)
+    const response = await statementService.updateStatement(id, data);
     if (response.success) {
-      fetchStatements()
+      fetchStatements();
     } else {
-      console.error(response.message)
+      console.error(response.message);
     }
-  }
+  };
 
   const handleDelete = async (id: number) => {
     if (!confirm('Are you sure you want to delete this statement?')) return
     const response = await statementService.deleteStatement(id)
     if (response.success) {
-      fetchStatements()
+      fetchStatements();
     } else {
-      console.error(response.message)
+      console.error(response.message);
     }
-  }
+  };
 
   const getSkillName = (id: number | string) => {
     const skill = skills.find((s) => s.id === Number(id));
@@ -143,10 +143,7 @@ export default function StatementsPage() {
               Manage therapeutic statements and guidance
             </p>
           </div>
-          <StatementDialog
-            mode="add"
-            onSubmit={handleCreate}
-          />
+          <StatementDialog mode="add" onSubmit={handleCreate} />
         </div>
 
         <div className="flex items-center space-x-2">
@@ -221,5 +218,5 @@ export default function StatementsPage() {
         </div>
       </div>
     </DashboardLayout>
-  )
+  );
 }
