@@ -1,11 +1,11 @@
-import axios from 'axios';
-import authService from './auth.service';
-import { API_BASE_URL } from '../utils/constants.ts'
+import axios from "axios";
+import authService from "./auth.service";
+import { API_BASE_URL } from "../utils/constants.ts";
 
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   },
 });
 
@@ -23,8 +23,8 @@ api.interceptors.response.use(
   (res) => res,
   (err) => {
     if (err.response?.status === 401) {
-      localStorage.removeItem('token');
-      localStorage.removeItem('userData');
+      localStorage.removeItem("token");
+      localStorage.removeItem("userData");
     }
     return Promise.reject(err);
   }
@@ -33,8 +33,8 @@ api.interceptors.response.use(
 class AdminService {
   private isAdmin(): boolean {
     try {
-      const user = authService.getUser();
-      return user?.role === 'admin'; // adjust if your enum is 'ADMIN'
+      const user: any = authService.getUser();
+      return user?.role === "admin"; // adjust if your enum is 'ADMIN'
     } catch {
       return false;
     }
@@ -45,21 +45,21 @@ class AdminService {
     if (!this.isAdmin()) {
       return {
         success: false,
-        message: 'Unauthorized: Admin access required',
+        message: "Unauthorized: Admin access required",
       };
     }
 
     try {
-      const res = await api.get('/admin/profile/get');
+      const res = await api.get("/admin/profile/get");
       return {
         success: true,
         data: res.data,
-        message: 'Key fetched successfully',
+        message: "Key fetched successfully",
       };
     } catch (error: any) {
       return {
         success: false,
-        message: error.response?.data?.message || 'Failed to fetch key',
+        message: error.response?.data?.message || "Failed to fetch key",
         error: error.response?.data,
       };
     }
@@ -70,21 +70,21 @@ class AdminService {
     if (!this.isAdmin()) {
       return {
         success: false,
-        message: 'Unauthorized: Admin access required',
+        message: "Unauthorized: Admin access required",
       };
     }
 
     try {
-      const res = await api.put('/admin/profile/update', { openaikey });
+      const res = await api.put("/admin/profile/update", { openaikey });
       return {
         success: true,
         data: res.data,
-        message: 'Key updated successfully',
+        message: "Key updated successfully",
       };
     } catch (error: any) {
       return {
         success: false,
-        message: error.response?.data?.message || 'Failed to update key',
+        message: error.response?.data?.message || "Failed to update key",
         error: error.response?.data,
       };
     }
