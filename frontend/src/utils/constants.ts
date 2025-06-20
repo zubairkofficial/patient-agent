@@ -1,1 +1,1 @@
-export const API_BASE_URL = import.meta.env.ENV === "development" ? import.meta.env.LOCAL_URL : import.meta.env.SERVER_URL
+export const API_BASE_URL = import.meta.env.VITE_ENV === "development" ? import.meta.env.VITE_LOCAL_URL : import.meta.env.VITE_SERVER_URL
