@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString, IsArray, IsNumber } from 'class-validator';
 
 export class SectionDto {
   @IsString()
@@ -10,5 +10,7 @@ export class SectionDto {
   description?: string;
 
   @IsOptional()
-  skillIds?: number[];
+  @IsArray()
+  @IsNumber({}, { each: true })
+  skills?: number[];
 }

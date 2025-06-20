@@ -16,7 +16,6 @@ import {
 import statementService from "@/services/statement.service";
 import skillsService from "@/services/skills.service";
 import emotionService from "@/services/emotions.service";
-import { data } from "react-router-dom";
 
 interface Statement {
   updatedAt: string | number | Date;
@@ -36,7 +35,6 @@ interface Skill {
 }
 
 interface Emotion {
-  title: string | number;
   id: number;
   name: string;
 }
@@ -51,7 +49,6 @@ export default function StatementsPage() {
     const response = await statementService.getAllStatements();
     if (response.success) {
       setStatements(response.data);
-      console.log("statment", response);
     } else {
       console.error(response.message);
     }
@@ -61,7 +58,6 @@ export default function StatementsPage() {
     const response = await skillsService.getAllSkills();
     if (response.success) {
       setSkills(response.data);
-      console.log("skills", response);
     } else {
       console.error(response.message);
     }
@@ -71,7 +67,6 @@ export default function StatementsPage() {
     const response = await emotionService.getAllEmotions();
     if (response.success) {
       setEmotions(response.data);
-      console.log("emotions", response);
     } else {
       console.error(response.message);
     }
@@ -111,16 +106,14 @@ export default function StatementsPage() {
     }
   };
 
-  const getSkillName = (id: number | string) => {
+  const getSkillNameWithId = (id: number | string) => {
     const skill = skills.find((s) => s.id === Number(id));
-    return typeof skill?.name === "string" ? skill.name : "—";
+    return skill ? `${skill.name} (${skill.id})` : "—";
   };
 
-  const getEmotionName = (id: number | string) => {
+  const getEmotionNameWithId = (id: number | string) => {
     const emotion = emotions.find((e) => e.id === Number(id) || e.name === id);
-    if (typeof emotion?.name === "string") return emotion.name;
-    if (typeof emotion?.name === "number") return emotion.name;
-    return "—";
+    return emotion ? `${emotion.name} (${emotion.id})` : "—";
   };
 
   const filteredStatements = statements.filter(
@@ -128,10 +121,10 @@ export default function StatementsPage() {
       (statement.statement || "")
         .toLowerCase()
         .includes(searchQuery.toLowerCase()) ||
-      getSkillName(statement.skill || "")
+      getSkillNameWithId(statement.skill || "")
         .toLowerCase()
         .includes(searchQuery.toLowerCase()) ||
-      getEmotionName(statement.emotion || "")
+      getEmotionNameWithId(statement.emotion || "")
         .toLowerCase()
         .includes(searchQuery.toLowerCase()) ||
       (statement.section || "")
@@ -172,8 +165,8 @@ export default function StatementsPage() {
             <TableHeader>
               <TableRow>
                 <TableHead className="w-[400px]">Statement</TableHead>
-                <TableHead>Skill</TableHead>
-                <TableHead>Emotion</TableHead>
+                <TableHead>Skill (ID)</TableHead>
+                <TableHead>Emotion (ID)</TableHead>
                 <TableHead>Section ID</TableHead>
                 <TableHead>Created</TableHead>
                 <TableHead>Updated</TableHead>
@@ -184,10 +177,8 @@ export default function StatementsPage() {
               {filteredStatements.map((statement) => (
                 <TableRow key={statement.id}>
                   <TableCell>{statement.statement || "—"}</TableCell>
-                  <TableCell>{getSkillName(statement.skill || "")}</TableCell>
-                  <TableCell>
-                    {getEmotionName(statement.emotion || "")}
-                  </TableCell>
+                  <TableCell>{getSkillNameWithId(statement.skill || "")}</TableCell>
+                  <TableCell>{getEmotionNameWithId(statement.emotion || "")}</TableCell>
                   <TableCell>{statement.sectionId || "—"}</TableCell>
                   <TableCell>
                     {new Date(statement.createdAt).toLocaleDateString()}

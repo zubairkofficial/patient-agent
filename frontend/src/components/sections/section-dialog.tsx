@@ -18,30 +18,23 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import skillsService from '../../services/skills.service'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import { Checkbox } from '@/components/ui/checkbox'
 
 interface SectionDialogProps {
   mode: 'add' | 'edit'
   defaultValues?: {
     title: string
-    skill: string // skill ID or name based on backend
-    category: string
+    skills: string[] // skill IDs
     description: string
   }
   onSubmit: (data: {
     title: string
-    skill: string
-    category: string
+    skills: string[]
     description: string
   }) => void
   trigger?: React.ReactNode
 }
-
-const categories = [
-  'Assessment',
-  'Practice',
-  'Theory',
-  'Exercise',
-]
 
 interface Skill {
   id: string
@@ -57,8 +50,7 @@ export function SectionDialog({
 }: SectionDialogProps) {
   const [open, setOpen] = useState(false)
   const [title, setTitle] = useState(defaultValues?.title || '')
-  const [skill, setSkill] = useState(defaultValues?.skill || '')
-  const [category, setCategory] = useState(defaultValues?.category || '')
+  const [selectedSkills, setSelectedSkills] = useState<string[]>(defaultValues?.skills || [])
   const [description, setDescription] = useState(defaultValues?.description || '')
   const [skills, setSkills] = useState<Skill[]>([])
   const [loadingSkills, setLoadingSkills] = useState(false)
@@ -67,19 +59,26 @@ export function SectionDialog({
     const fetchSkills = async () => {
       setLoadingSkills(true)
       const res = await skillsService.getAllSkills()
-      if (res.success) {
-        setSkills(res.data) // assume data is array of { id, name, title }
-      } else {
-        console.error('Failed to load skills:', res.message)
-      }
+      if (res.success) setSkills(res.data)
+      else console.error('Failed to load skills:', res.message)
       setLoadingSkills(false)
     }
     fetchSkills()
   }, [])
 
+  const toggleSkill = (id: string) => {
+    setSelectedSkills((prev) =>
+      prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]
+    )
+  }
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    onSubmit({ title, skill, category, description })
+    if (!title || selectedSkills.length === 0 || !description) {
+      alert('Please fill out all fields.')
+      return
+    }
+    onSubmit({ title, skills: selectedSkills, description })
     setOpen(false)
   }
 
@@ -94,9 +93,7 @@ export function SectionDialog({
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>
-            {mode === 'add' ? 'Create New Section' : 'Edit Section'}
-          </DialogTitle>
+          <DialogTitle>{mode === 'add' ? 'Create New Section' : 'Edit Section'}</DialogTitle>
           <DialogDescription>
             {mode === 'add'
               ? 'Add a new therapeutic section to the system.'
@@ -104,6 +101,7 @@ export function SectionDialog({
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Title */}
           <div className="space-y-2">
             <label htmlFor="title" className="text-sm font-medium">
               Title
@@ -116,50 +114,31 @@ export function SectionDialog({
               required
             />
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label htmlFor="skill" className="text-sm font-medium">
-                Skill
-              </label>
-              <Select
-                value={skill}
-                onValueChange={setSkill}
-                required
-              >
-                <SelectTrigger id="skill">
-                  <SelectValue placeholder={loadingSkills ? 'Loading...' : 'Select skill'} />
-                </SelectTrigger>
-                <SelectContent>
-                  {skills.map((s) => (
-                    <SelectItem key={s.id} value={s.id}>
-                      {s.title}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <label htmlFor="category" className="text-sm font-medium">
-                Category
-              </label>
-              <Select
-                value={category}
-                onValueChange={setCategory}
-                required
-              >
-                <SelectTrigger id="category">
-                  <SelectValue placeholder="Select category" />
-                </SelectTrigger>
-                <SelectContent>
-                  {categories.map((cat) => (
-                    <SelectItem key={cat} value={cat}>
-                      {cat}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+
+          {/* Multi-Select Skills */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Select Skills</label>
+            <ScrollArea className="max-h-40 border rounded p-2">
+              {skills.map((s) => (
+                <div key={s.id} className="flex items-center gap-2 py-1">
+                  <Checkbox
+                    id={`skill-${s.id}`}
+                    checked={selectedSkills.includes(s.id)}
+                    onCheckedChange={() => toggleSkill(s.id)}
+                  />
+                  <label htmlFor={`skill-${s.id}`} className="text-sm">
+                    {s.title}
+                  </label>
+                </div>
+              ))}
+              {loadingSkills && <p className="text-xs text-muted">Loading...</p>}
+              {!loadingSkills && skills.length === 0 && (
+                <p className="text-sm text-muted">No skills available</p>
+              )}
+            </ScrollArea>
           </div>
+
+          {/* Description */}
           <div className="space-y-2">
             <label htmlFor="description" className="text-sm font-medium">
               Description
@@ -172,12 +151,10 @@ export function SectionDialog({
               required
             />
           </div>
+
+          {/* Buttons */}
           <div className="flex justify-end gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setOpen(false)}
-            >
+            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
               Cancel
             </Button>
             <Button type="submit" className="bg-purple-600 hover:bg-purple-700">

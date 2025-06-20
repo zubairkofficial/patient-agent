@@ -17,20 +17,27 @@ export class SectionService {
             title: sectionDto.title,
             description: sectionDto.description,
         });
-        if (sectionDto.skillIds && sectionDto.skillIds.length > 0) {
-
-            sectionDto.skillIds.forEach(async (skillId: number) => {
+        console.log('array bro', sectionDto.skills)
+        if (sectionDto.skills && sectionDto.skills.length > 0) {
+            console.log('here i cone')
+            sectionDto.skills.forEach(async (skillId: number) => {
+                console.log('creat kills join', skillId)
                 await JoinSectionSkills.create({
                     sectionId: section.id,
                     skillId: skillId
                 })
             });
         }
+        console.log('ullu ka patha')
         return section;
     }
 
     async findAll() {
-        return await this.sectionModel.findAll({ include: [Skills] });
+        return await this.sectionModel.findAll({
+            include: [{
+                model: Skills
+            }]
+        });
     }
 
     async update(id: number, sectionDto: any) {
