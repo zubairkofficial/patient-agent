@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
+import React from 'react'
 import { AuthLayout } from './components/auth/auth-layout'
 import LoginPage from './pages/auth/login'
 import ForgotPasswordPage from './pages/auth/forgot-password'
@@ -17,7 +18,7 @@ const isAuthenticated = () => {
 }
 
 // ✅ Protected Route wrapper
-const PrivateRoute = ({ children }: { children: JSX.Element }) => {
+const PrivateRoute = ({ children }: { children: React.ReactElement }) => {
   return isAuthenticated() ? children : <Navigate to="/login" replace />
 }
 
