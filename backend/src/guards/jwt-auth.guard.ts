@@ -30,7 +30,7 @@ export class JwtAuthGuard implements CanActivate {
     }
 
     try {
-      console.log("token", token)
+      console.log("token", token,process.env.JWT_SECRET )
       const decoded = this.jwtService.verify<JwtPayload>(token, {
         secret: process.env.JWT_SECRET,
       });

@@ -12,8 +12,8 @@ import { JwtModule } from '@nestjs/jwt';
     
     // 👇 Make sure JwtModule is imported
     JwtModule.register({ 
-      secret: process.env.JWT_SECRET || 'your_jwt_secret', // Set your actual secret here
-      signOptions: { expiresIn: '1d' },
+      secret: process.env.JWT_SECRET, // Set your actual secret here
+      signOptions: { expiresIn: '24h' },
     }),
   ],
   controllers: [EmotionsController],
