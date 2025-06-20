@@ -1,5 +1,5 @@
 // src/pages/SectionsPage.tsx
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { Layers, Search, PencilIcon, Trash2Icon } from 'lucide-react';
 import { SectionDialog } from '@/components/sections/section-dialog';
 import { DashboardLayout } from '@/components/layout/dashboard-layout';
@@ -16,6 +16,9 @@ import {
 import sectionService from '@/services/section.service';
 
 interface Section {
+  List: ReactNode;
+  updatedAt: string | number | Date;
+  createdAt: string | number | Date;
   id: number;
   title: string;
   skill: string;
@@ -110,9 +113,9 @@ export default function SectionsPage() {
               <TableRow>
                 <TableHead>Title</TableHead>
                 <TableHead>Skill</TableHead>
-                <TableHead>Category</TableHead>
                 <TableHead className="w-[400px]">Description</TableHead>
                 <TableHead>Created</TableHead>
+                <TableHead>Updated</TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -122,16 +125,12 @@ export default function SectionsPage() {
                   <TableCell className="font-medium">{section.title}</TableCell>
                   <TableCell>
                     <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs">
-                      {section.skill}
-                    </span>
-                  </TableCell>
-                  <TableCell>
-                    <span className="bg-purple-100 text-purple-700 px-2 py-1 rounded-full text-xs">
-                      {section.category}
+                      {section.List}
                     </span>
                   </TableCell>
                   <TableCell>{section.description}</TableCell>
-                  <TableCell>{section.created}</TableCell>
+                    <TableCell>{new Date(section.createdAt).toLocaleDateString()}</TableCell>
+                  <TableCell>{new Date(section.updatedAt).toLocaleDateString()}</TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <SectionDialog

@@ -12,25 +12,66 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+
 import statementService from '@/services/statement.service'
+import skillsService from '@/services/skills.service'
+import emotionService from '@/services/emotions.service'
+import { data } from 'react-router-dom'
 
 interface Statement {
+  updatedAt: string | number | Date
+  createdAt: string | number | Date
   id: number
-  description: string
-  skill: string
-  emotion: string
-  section: string
+  statement: string
+  skill?: number | string
+  emotion?: string | number
+  sectionId: string
+  section?: string
   created: string
+}
+
+interface Skill {
+  id: number
+  name: string
+}
+
+interface Emotion {
+  title: string | number
+  id: number
+  name: string
 }
 
 export default function StatementsPage() {
   const [statements, setStatements] = useState<Statement[]>([])
+  const [skills, setSkills] = useState<Skill[]>([])
+  const [emotions, setEmotions] = useState<Emotion[]>([])
   const [searchQuery, setSearchQuery] = useState('')
 
   const fetchStatements = async () => {
     const response = await statementService.getAllStatements()
     if (response.success) {
       setStatements(response.data)
+      console.log('statment',response)
+    } else {
+      console.error(response.message)
+    }
+  }
+
+  const fetchSkills = async () => {
+    const response = await skillsService.getAllSkills()
+    if (response.success) {
+      setSkills(response.data)
+      console.log('skills',response)
+    } else {
+      console.error(response.message)
+    }
+  }
+
+  const fetchEmotions = async () => {
+    const response = await emotionService.getAllEmotions()
+    if (response.success) {
+      setEmotions(response.data)
+      console.log('emotions',response)
     } else {
       console.error(response.message)
     }
@@ -38,6 +79,8 @@ export default function StatementsPage() {
 
   useEffect(() => {
     fetchStatements()
+    fetchSkills()
+    fetchEmotions()
   }, [])
 
   const handleCreate = async (data: any) => {
@@ -59,6 +102,7 @@ export default function StatementsPage() {
   }
 
   const handleDelete = async (id: number) => {
+    if (!confirm('Are you sure you want to delete this statement?')) return
     const response = await statementService.deleteStatement(id)
     if (response.success) {
       fetchStatements()
@@ -67,12 +111,23 @@ export default function StatementsPage() {
     }
   }
 
-  const filteredStatements = statements.filter(
-    statement =>
-      statement.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      statement.skill.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      statement.emotion.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      statement.section.toLowerCase().includes(searchQuery.toLowerCase())
+  const getSkillName = (id: number | string) => {
+    const skill = skills.find((s) => s.id === Number(id));
+    return typeof skill?.name === 'string' ? skill.name : '—';
+  }
+
+  const getEmotionName = (id: number | string) => {
+    const emotion = emotions.find((e) => e.id === Number(id) || e.name === id);
+    if (typeof emotion?.name === 'string') return emotion.name;
+    if (typeof emotion?.name === 'number') return emotion.name.toString();
+    return '—';
+  }
+
+  const filteredStatements = statements.filter((statement) =>
+    (statement.statement || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+    getSkillName(statement.skill || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+    getEmotionName(statement.emotion || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (statement.section || '').toLowerCase().includes(searchQuery.toLowerCase())
   )
 
   return (
@@ -110,31 +165,33 @@ export default function StatementsPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[400px]">Description</TableHead>
+                <TableHead className="w-[400px]">Statement</TableHead>
                 <TableHead>Skill</TableHead>
                 <TableHead>Emotion</TableHead>
-                <TableHead>Section</TableHead>
+                <TableHead>Section ID</TableHead>
                 <TableHead>Created</TableHead>
+                <TableHead>Updated</TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredStatements.map((statement) => (
                 <TableRow key={statement.id}>
-                  <TableCell>{statement.description}</TableCell>
-                  <TableCell>{statement.skill}</TableCell>
-                  <TableCell>{statement.emotion}</TableCell>
-                  <TableCell>{statement.section}</TableCell>
-                  <TableCell>{statement.created}</TableCell>
+                  <TableCell>{statement.statement || '—'}</TableCell>
+                  <TableCell>{getSkillName(statement.skill || '')}</TableCell>
+                  <TableCell>{getEmotionName(statement.emotion || '')}</TableCell>
+                  <TableCell>{statement.sectionId || '—'}</TableCell>
+                  <TableCell>{new Date(statement.createdAt).toLocaleDateString()}</TableCell>
+                  <TableCell>{new Date(statement.updatedAt).toLocaleDateString()}</TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <StatementDialog
                         mode="edit"
                         defaultValues={{
-                          description: statement.description,
-                          skill: statement.skill,
-                          emotion: statement.emotion,
-                          section: statement.section,
+                          statement: statement.statement || '',
+                          skill: statement.skill || '',
+                          emotion: statement.emotion || '',
+                          sectionId: statement.sectionId || '',
                         }}
                         onSubmit={(data) => handleUpdate(statement.id, data)}
                         trigger={

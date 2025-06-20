@@ -1,6 +1,5 @@
 import axios from 'axios';
-
-const API_BASE_URL = 'http://localhost:3000'; // Replace with your deployed URL
+import { API_BASE_URL } from '../utils/constants.ts'
 
  const token = localStorage.getItem('token');
 console.log("toke", token)

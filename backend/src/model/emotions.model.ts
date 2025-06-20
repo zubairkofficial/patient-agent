@@ -33,7 +33,7 @@ export class Emotions extends Model {
       allowNull: true,
     })
   @IsNotEmpty()
-  declare detail: string;
+  declare detail: string; 
 
    @BelongsToMany(() => Statement, () => joinstatementemotions)
         statement: Statement[]

@@ -1,8 +1,9 @@
-// src/auth/roles.guard.ts
+// src/emotions/auth/roles.guard.ts
 import {
   CanActivate,
   ExecutionContext,
   Injectable,
+  ForbiddenException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 
@@ -15,10 +16,15 @@ export class RolesGuard implements CanActivate {
       context.getHandler(),
       context.getClass(),
     ]);
+
     if (!requiredRoles) return true;
 
     const request = context.switchToHttp().getRequest();
-    const user = request.user; // Make sure `user` is attached via auth middleware
+    const user = request.user;
+
+    if (!user || !user.role) {
+      throw new ForbiddenException('Access denied: No role found');
+    }
 
     return requiredRoles.includes(user.role);
   }

@@ -2,8 +2,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Emotions } from '../model/emotions.model';
-import { CreateEmotionDto } from './dto/emotion.dto';
-import { UpdateEmotionDto } from './dto/emotion.dto';
+import { CreateEmotionDto, UpdateEmotionDto } from './dto/emotion.dto';
 
 @Injectable()
 export class EmotionsService {
@@ -13,7 +12,7 @@ export class EmotionsService {
   ) {}
 
   async create(dto: CreateEmotionDto): Promise<Emotions> {
-    return this.emotionModel.create({...dto});
+    return this.emotionModel.create({ ...dto });
   }
 
   async findAll(): Promise<Emotions[]> {

@@ -1,3 +1,4 @@
+// src/components/emotions/emotion-dialog.tsx
 import { useState } from 'react'
 import {
   Dialog,
@@ -14,10 +15,10 @@ import { Textarea } from '@/components/ui/textarea'
 interface EmotionDialogProps {
   mode: 'add' | 'edit'
   defaultValues?: {
-    title: string
+    name: string
     detail: string
   }
-  onSubmit: (data: { title: string; detail: string }) => void
+  onSubmit: (data: { name: string; detail: string }) => void
   trigger?: React.ReactNode
 }
 
@@ -28,17 +29,25 @@ export function EmotionDialog({
   trigger,
 }: EmotionDialogProps) {
   const [open, setOpen] = useState(false)
-  const [title, setTitle] = useState(defaultValues?.title || '')
-  const [detail, setDetail] = useState(defaultValues?.detail || '')
+  const [name, setName] = useState('')
+  const [detail, setDetail] = useState('')
+
+  const handleOpen = (isOpen: boolean) => {
+    setOpen(isOpen)
+    if (isOpen && defaultValues) {
+      setName(defaultValues.name || '')
+      setDetail(defaultValues.detail || '')
+    }
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    onSubmit({ title, detail })
+    onSubmit({ name, detail })
     setOpen(false)
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpen}>
       <DialogTrigger asChild>
         {trigger || (
           <Button>
@@ -59,14 +68,14 @@ export function EmotionDialog({
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <label htmlFor="title" className="text-sm font-medium">
-              Title
+            <label htmlFor="name" className="text-sm font-medium">
+              Name
             </label>
             <Input
-              id="title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Enter emotion title"
+              id="name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Enter emotion name"
               required
             />
           </div>

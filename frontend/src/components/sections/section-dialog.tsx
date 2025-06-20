@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   Dialog,
   DialogContent,
@@ -17,12 +17,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import skillsService from '../../services/skills.service'
 
 interface SectionDialogProps {
   mode: 'add' | 'edit'
   defaultValues?: {
     title: string
-    skill: string
+    skill: string // skill ID or name based on backend
     category: string
     description: string
   }
@@ -35,18 +36,18 @@ interface SectionDialogProps {
   trigger?: React.ReactNode
 }
 
-const skills = [
-  'Anxiety Management',
-  'Mindfulness Practice',
-  'Sleep Hygiene',
-]
-
 const categories = [
   'Assessment',
   'Practice',
   'Theory',
   'Exercise',
 ]
+
+interface Skill {
+  id: string
+  name: string
+  title: string
+}
 
 export function SectionDialog({
   mode,
@@ -59,6 +60,22 @@ export function SectionDialog({
   const [skill, setSkill] = useState(defaultValues?.skill || '')
   const [category, setCategory] = useState(defaultValues?.category || '')
   const [description, setDescription] = useState(defaultValues?.description || '')
+  const [skills, setSkills] = useState<Skill[]>([])
+  const [loadingSkills, setLoadingSkills] = useState(false)
+
+  useEffect(() => {
+    const fetchSkills = async () => {
+      setLoadingSkills(true)
+      const res = await skillsService.getAllSkills()
+      if (res.success) {
+        setSkills(res.data) // assume data is array of { id, name, title }
+      } else {
+        console.error('Failed to load skills:', res.message)
+      }
+      setLoadingSkills(false)
+    }
+    fetchSkills()
+  }, [])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -110,12 +127,33 @@ export function SectionDialog({
                 required
               >
                 <SelectTrigger id="skill">
-                  <SelectValue placeholder="Select skill" />
+                  <SelectValue placeholder={loadingSkills ? 'Loading...' : 'Select skill'} />
                 </SelectTrigger>
                 <SelectContent>
                   {skills.map((s) => (
-                    <SelectItem key={s} value={s}>
-                      {s}
+                    <SelectItem key={s.id} value={s.id}>
+                      {s.title}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <label htmlFor="category" className="text-sm font-medium">
+                Category
+              </label>
+              <Select
+                value={category}
+                onValueChange={setCategory}
+                required
+              >
+                <SelectTrigger id="category">
+                  <SelectValue placeholder="Select category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.map((cat) => (
+                    <SelectItem key={cat} value={cat}>
+                      {cat}
                     </SelectItem>
                   ))}
                 </SelectContent>

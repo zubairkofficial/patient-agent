@@ -1,6 +1,5 @@
 import axios from 'axios';
-
-const API_BASE_URL = 'http://localhost:3000'; // Update if deployed
+import { API_BASE_URL } from '../utils/constants.ts'
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -20,7 +19,7 @@ api.interceptors.request.use((config) => {
 
 class SectionService {
   // ✅ Create a section (admin only)
-  async createSection(sectionData : any) {
+  async createSection(sectionData: any) {
     try {
       const response = await api.post('/section/', sectionData);
       return {
@@ -28,7 +27,7 @@ class SectionService {
         data: response.data,
         message: 'Section created successfully',
       };
-    } catch (error : any) {
+    } catch (error: any) {
       return {
         success: false,
         message:
@@ -47,7 +46,7 @@ class SectionService {
         data: response.data,
         message: 'Sections fetched successfully',
       };
-    } catch (error : any) {
+    } catch (error: any) {
       return {
         success: false,
         message:
@@ -58,7 +57,7 @@ class SectionService {
   }
 
   // ✅ Update a section (admin only)
-  async updateSection(id : number, sectionData : any) {
+  async updateSection(id: number, sectionData: any) {
     try {
       const response = await api.put(`/section/${id}`, sectionData);
       return {
@@ -66,7 +65,7 @@ class SectionService {
         data: response.data,
         message: 'Section updated successfully',
       };
-    } catch (error : any) {
+    } catch (error: any) {
       return {
         success: false,
         message:
@@ -77,7 +76,7 @@ class SectionService {
   }
 
   // ✅ Delete a section (admin only)
-  async deleteSection(id : number) {
+  async deleteSection(id: number) {
     try {
       const response = await api.delete(`/section/${id}`);
       return {
@@ -85,7 +84,7 @@ class SectionService {
         data: response.data,
         message: 'Section deleted successfully',
       };
-    } catch (error : any) {
+    } catch (error: any) {
       return {
         success: false,
         message:

@@ -9,6 +9,7 @@ import EmotionsPage from './pages/emotions'
 import RegisterForm from './components/auth/register-form'
 import SectionsPage from './pages/sections'
 import SkillsPage from './pages/skills'
+import AdminKeyPage from './pages/apikey'
 
 export default function App() {
   return (
@@ -41,6 +42,7 @@ export default function App() {
         />
         <Route path="/signup" element={<RegisterForm />} />        {/* Protected routes */}        <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/statements" element={<StatementsPage />} />
+        <Route path="/apikey" element={<AdminKeyPage />} />
         <Route path="/emotions" element={<EmotionsPage />} />
         <Route path="/sections" element={<SectionsPage />} />
         <Route path="/skills" element={<SkillsPage />} />

@@ -10,36 +10,37 @@ import {
   ParseIntPipe,
 } from '@nestjs/common';
 import { EmotionsService } from './emotions.service';
-import { CreateEmotionDto } from './dto/emotion.dto';
-import { UpdateEmotionDto } from './dto/emotion.dto';
+import { CreateEmotionDto, UpdateEmotionDto } from './dto/emotion.dto';
 import { RolesGuard } from './auth/roles.guard';
 import { Roles } from './auth/roles.decorator';
+import { Role } from 'src/utils/roles.enum';
+import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
 
 @Controller('emotions')
-@UseGuards(RolesGuard)
+@UseGuards(JwtAuthGuard, RolesGuard) // ✅ apply guards at controller level
 export class EmotionsController {
   constructor(private readonly emotionsService: EmotionsService) {}
 
-  @Post()
-  @Roles('admin')
+  @Post('/')
+  @Roles(Role.ADMIN)
   create(@Body() dto: CreateEmotionDto) {
     return this.emotionsService.create(dto);
   }
 
-  @Get()
-  @Roles('admin')
+  @Get('getall')
+  @Roles(Role.ADMIN)
   findAll() {
     return this.emotionsService.findAll();
   }
 
-  @Get(':id')
-  @Roles('admin')
+  @Get('get/:id')
+  @Roles(Role.USER)
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.emotionsService.findOne(id);
   }
 
-  @Patch(':id')
-  @Roles('admin')
+  @Patch('update/:id')
+  @Roles(Role.ADMIN)
   update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateEmotionDto) {
     return this.emotionsService.update(id, dto);
   }

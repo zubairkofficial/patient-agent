@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Smile, Search, PencilIcon, Trash2Icon } from 'lucide-react'
 import { EmotionDialog } from '@/components/emotions/emotion-dialog'
 import { DashboardLayout } from '@/components/layout/dashboard-layout'
@@ -12,52 +12,51 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import emotionService from '../services/emotions.service'
 
 interface Emotion {
   id: number
-  title: string
+  name: string
   detail: string
-  created: string
-  updated: string
+  createdAt: string
+  updatedAt: string
 }
-
-const emotions: Emotion[] = [
-  {
-    id: 1,
-    title: 'Anxiety',
-    detail: 'A feeling of worry, nervousness, or unease about something with an uncertain outcome',
-    created: '2024-01-15',
-    updated: '2024-01-15',
-  },
-  {
-    id: 2,
-    title: 'Stress',
-    detail: 'A state of mental or emotional strain resulting from adverse or demanding circumstances',
-    created: '2024-01-14',
-    updated: '2024-01-16',
-  },
-  {
-    id: 3,
-    title: 'Calm',
-    detail: 'A peaceful state of mind, free from agitation, excitement, or disturbance',
-    created: '2024-01-13',
-    updated: '2024-01-13',
-  },
-  {
-    id: 4,
-    title: 'Joy',
-    detail: 'A feeling of great pleasure and happiness, often accompanied by a sense of fulfillment',
-    created: '2024-01-12',
-    updated: '2024-01-12',
-  },
-]
 
 export default function EmotionsPage() {
   const [searchQuery, setSearchQuery] = useState('')
+  const [emotions, setEmotions] = useState<Emotion[]>([])
+
+  const fetchEmotions = async () => {
+    const res = await emotionService.getAllEmotions()
+    if (res.success) {
+      setEmotions(res.data)
+    } else {
+      console.error(res.message)
+    }
+  }
+
+  useEffect(() => {
+    fetchEmotions()
+  }, [])
+
+  const handleCreate = async (data: { name: string; detail: string }) => {
+    const res = await emotionService.createEmotion(data)
+    if (res.success) fetchEmotions()
+  }
+
+  const handleUpdate = async (id: number, data: { name: string; detail: string }) => {
+    const res = await emotionService.updateEmotion(id, data)
+    if (res.success) fetchEmotions()
+  }
+
+  const handleDelete = async (id: number) => {
+    const res = await emotionService.deleteEmotion(id)
+    if (res.success) fetchEmotions()
+  }
 
   const filteredEmotions = emotions.filter(
-    emotion =>
-      emotion.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (emotion) =>
+      emotion.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       emotion.detail.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
@@ -71,14 +70,12 @@ export default function EmotionsPage() {
               Emotions Management
             </h1>
             <p className="text-muted-foreground">
-              Manage emotional states and their descriptions            </p>
+              Manage emotional states and their descriptions
+            </p>
           </div>
           <EmotionDialog
             mode="add"
-            onSubmit={(data) => {
-              console.log('Create emotion:', data)
-              // API integration will go here
-            }}
+            onSubmit={handleCreate}
           />
         </div>
 
@@ -108,27 +105,21 @@ export default function EmotionsPage() {
             <TableBody>
               {filteredEmotions.map((emotion) => (
                 <TableRow key={emotion.id}>
-                  <TableCell className="font-medium">{emotion.title}</TableCell>
+                  <TableCell className="font-medium">{emotion.name}</TableCell>
                   <TableCell>{emotion.detail}</TableCell>
-                  <TableCell>{emotion.created}</TableCell>
-                  <TableCell>{emotion.updated}</TableCell>
+                  <TableCell>{new Date(emotion.createdAt).toLocaleDateString()}</TableCell>
+                  <TableCell>{new Date(emotion.updatedAt).toLocaleDateString()}</TableCell>
                   <TableCell>
-                    <div className="flex items-center gap-2">                      <EmotionDialog
+                    <div className="flex items-center gap-2">
+                      <EmotionDialog
                         mode="edit"
                         defaultValues={{
-                          title: emotion.title,
+                          name: emotion.name,
                           detail: emotion.detail,
                         }}
-                        onSubmit={(data) => {
-                          console.log('Update emotion:', emotion.id, data)
-                          // API integration will go here
-                        }}
+                        onSubmit={(data) => handleUpdate(emotion.id, data)}
                         trigger={
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8"
-                          >
+                          <Button variant="ghost" size="icon" className="h-8 w-8">
                             <PencilIcon className="h-4 w-4" />
                           </Button>
                         }
@@ -137,10 +128,7 @@ export default function EmotionsPage() {
                         variant="ghost"
                         size="icon"
                         className="h-8 w-8 text-destructive"
-                        onClick={() => {
-                          console.log('Delete emotion:', emotion.id)
-                          // API integration will go here
-                        }}
+                        onClick={() => handleDelete(emotion.id)}
                       >
                         <Trash2Icon className="h-4 w-4" />
                       </Button>

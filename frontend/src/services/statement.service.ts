@@ -1,7 +1,6 @@
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
-
-const API_BASE_URL = 'http://localhost:3000/statement'; // Update as needed
+import { API_BASE_URL } from '../utils/constants.ts'
 
 const api = axios.create({
   baseURL: API_BASE_URL,

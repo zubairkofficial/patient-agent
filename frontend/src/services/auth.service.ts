@@ -1,8 +1,6 @@
 // services/authService.js
 import axios from 'axios';
-
-// Base URL for your NestJS backend
-const API_BASE_URL = 'http://localhost:3000'; // Change this to your backend URL
+import { API_BASE_URL } from '../utils/constants.ts'
 
 // Create axios instance
 const api = axios.create({
@@ -42,6 +40,9 @@ api.interceptors.response.use(
 );
 
 class AuthService {
+  getUser() {
+    throw new Error('Method not implemented.');
+  }
   // Register user
   async register(userData : any) {
     try {

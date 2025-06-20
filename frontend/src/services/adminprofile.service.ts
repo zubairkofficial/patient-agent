@@ -1,7 +1,6 @@
 import axios from 'axios';
 import authService from './auth.service';
-
-const API_BASE_URL = 'http://localhost:3000'; // Adjust to match your backend
+import { API_BASE_URL } from '../utils/constants.ts'
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -10,7 +9,7 @@ const api = axios.create({
   },
 });
 
-// Intercept request to include auth token
+// ✅ Attach JWT token to every request
 api.interceptors.request.use((config) => {
   const token = authService.getToken();
   if (token) {
@@ -19,12 +18,12 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Handle 401 errors globally
+// ✅ Handle 401 errors globally
 api.interceptors.response.use(
   (res) => res,
   (err) => {
     if (err.response?.status === 401) {
-      localStorage.removeItem('authToken');
+      localStorage.removeItem('token');
       localStorage.removeItem('userData');
     }
     return Promise.reject(err);
@@ -32,8 +31,24 @@ api.interceptors.response.use(
 );
 
 class AdminService {
-  // ✅ Get existing OpenAI key (admin only)
+  private isAdmin(): boolean {
+    try {
+      const user = authService.getUser();
+      return user?.role === 'admin'; // adjust if your enum is 'ADMIN'
+    } catch {
+      return false;
+    }
+  }
+
+  // ✅ GET OpenAI Key
   async getOpenAIKey() {
+    if (!this.isAdmin()) {
+      return {
+        success: false,
+        message: 'Unauthorized: Admin access required',
+      };
+    }
+
     try {
       const res = await api.get('/admin/profile/get');
       return {
@@ -50,8 +65,15 @@ class AdminService {
     }
   }
 
-  // ✅ Upsert (create or update) OpenAI key (admin only)
+  // ✅ PUT OpenAI Key
   async upsertOpenAIKey(openaikey: string) {
+    if (!this.isAdmin()) {
+      return {
+        success: false,
+        message: 'Unauthorized: Admin access required',
+      };
+    }
+
     try {
       const res = await api.put('/admin/profile/update', { openaikey });
       return {
@@ -69,12 +91,7 @@ class AdminService {
   }
 }
 
-// Export singleton
+// ✅ Export instance and methods
 const adminService = new AdminService();
 export default adminService;
-
-// Optionally export functions
-export const {
-  getOpenAIKey,
-  upsertOpenAIKey,
-} = adminService;
+export const { getOpenAIKey, upsertOpenAIKey } = adminService;

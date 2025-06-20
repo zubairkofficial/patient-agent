@@ -16,9 +16,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import sectionService from '../../services/section.service'
+
+import sectionService from '@/services/section.service'
+import skillsService from '@/services/skills.service'
+import emotionService from '@/services/emotions.service'
 
 interface Section {
+  id: number
+  name: string
+}
+
+interface Skill {
+  id: number
+  name: string
+}
+
+interface Emotion {
   id: number
   name: string
 }
@@ -27,21 +40,18 @@ interface StatementDialogProps {
   mode: 'add' | 'edit'
   defaultValues?: {
     statement: string
-    skill: string
-    emotion: string
+    skill: string | number
+    emotion: string | number
     sectionId: string | number
   }
   onSubmit: (data: {
     statement: string
-    skill: string
+    skill: number
     emotion: string
     sectionId: number
   }) => void
   trigger?: React.ReactNode
 }
-
-const skills = ['Anxiety Management', 'Mindfulness Practice', 'Sleep Hygiene']
-const emotions = ['Anxiety', 'Stress', 'Calm', 'Joy']
 
 export function StatementDialog({
   mode,
@@ -51,51 +61,71 @@ export function StatementDialog({
 }: StatementDialogProps) {
   const [open, setOpen] = useState(false)
   const [statement, setStatement] = useState('')
-  const [skill, setSkill] = useState('')
+  const [skill, setSkill] = useState<number | null>(null)
   const [emotion, setEmotion] = useState('')
   const [sectionId, setSectionId] = useState<number | null>(null)
+
   const [sections, setSections] = useState<Section[]>([])
+  const [skills, setSkills] = useState<Skill[]>([])
+  const [emotions, setEmotions] = useState<Emotion[]>([])
+
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const fetchSections = async () => {
+  const fetchData = async () => {
     setLoading(true)
     try {
-      const response = await sectionService.getAllSections()
-      if (response.success) {
-        setSections(response.data)
-        // Pre-select matching section if editing
-        if (defaultValues?.sectionId) {
-          const found = response.data.find(
-            (s: Section) =>
-              s.id === Number(defaultValues.sectionId) ||
-              s.name === defaultValues.sectionId
-          )
-          if (found) setSectionId(found.id)
-        }
-      } else {
-        setError(response.message)
+      const [sectionRes, skillRes, emotionRes] = await Promise.all([
+        sectionService.getAllSections(),
+        skillsService.getAllSkills(),
+        emotionService.getAllEmotions(),
+      ])
+
+      if (sectionRes.success) setSections(sectionRes.data)
+      else setError(sectionRes.message)
+
+      if (skillRes.success) setSkills(skillRes.data)
+      else setError(skillRes.message)
+
+      if (emotionRes.success) setEmotions(emotionRes.data)
+      else setError(emotionRes.message)
+
+      if (defaultValues) {
+        setStatement(defaultValues.statement || '')
+        setEmotion(
+          typeof defaultValues.emotion === 'number'
+            ? emotionRes.data.find((e: Emotion) => e.id === defaultValues.emotion)?.name || ''
+            : defaultValues.emotion
+        )
+
+        const foundSection = sectionRes.data.find(
+          (s: Section) =>
+            s.id === Number(defaultValues.sectionId) ||
+            s.name === defaultValues.sectionId
+        )
+        if (foundSection) setSectionId(foundSection.id)
+
+        const foundSkill = skillRes.data.find(
+          (s: Skill) =>
+            s.id === Number(defaultValues.skill) ||
+            s.name === defaultValues.skill
+        )
+        if (foundSkill) setSkill(foundSkill.id)
       }
     } catch {
-      setError('Failed to load sections')
+      setError('Failed to load data')
     } finally {
       setLoading(false)
     }
   }
 
   useEffect(() => {
-    if (open) {
-      setStatement(defaultValues?.statement || '')
-      setSkill(defaultValues?.skill || '')
-      setEmotion(defaultValues?.emotion || '')
-      setSectionId(null)
-      fetchSections()
-    }
+    if (open) fetchData()
   }, [open])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!statement || !skill || !emotion || sectionId === null) {
+    if (!statement || skill === null || !emotion || sectionId === null) {
       alert('Please fill out all fields.')
       return
     }
@@ -115,80 +145,71 @@ export function StatementDialog({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>
-            {mode === 'add' ? 'Create New Statement' : 'Edit Statement'}
+            {mode === 'add' ? 'Create Statement' : 'Edit Statement'}
           </DialogTitle>
           <DialogDescription>
             {mode === 'add'
-              ? 'Add a new therapeutic statement to the system.'
-              : 'Update the statement information below.'}
+              ? 'Add a new therapeutic statement.'
+              : 'Edit this statement.'}
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Statement Field */}
           <div className="space-y-2">
-            <label htmlFor="statement" className="text-sm font-medium">
-              Statement
-            </label>
+            <label className="text-sm font-medium">Statement</label>
             <Textarea
-              id="statement"
               value={statement}
               onChange={(e) => setStatement(e.target.value)}
-              placeholder="Enter therapeutic statement"
               required
             />
           </div>
 
-          {/* Skill, Emotion, Section */}
           <div className="grid grid-cols-3 gap-4">
-            {/* Skill */}
             <div className="space-y-2">
-              <label htmlFor="skill" className="text-sm font-medium">
-                Skill
-              </label>
-              <Select value={skill} onValueChange={setSkill}>
-                <SelectTrigger id="skill">
+              <label className="text-sm font-medium">Skill</label>
+              <Select
+                value={skill?.toString() || ''}
+                onValueChange={(value) => setSkill(Number(value))}
+              >
+                <SelectTrigger>
                   <SelectValue placeholder="Select skill" />
                 </SelectTrigger>
                 <SelectContent>
                   {skills.map((s) => (
-                    <SelectItem key={s} value={s}>
-                      {s}
+                    <SelectItem key={s.id} value={s.id.toString()}>
+                      {s.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
 
-            {/* Emotion */}
             <div className="space-y-2">
-              <label htmlFor="emotion" className="text-sm font-medium">
-                Emotion
-              </label>
-              <Select value={emotion} onValueChange={setEmotion}>
-                <SelectTrigger id="emotion">
+              <label className="text-sm font-medium">Emotion</label>
+              <Select
+                value={emotion}
+                onValueChange={setEmotion}
+              >
+                <SelectTrigger>
                   <SelectValue placeholder="Select emotion" />
                 </SelectTrigger>
                 <SelectContent>
                   {emotions.map((e) => (
-                    <SelectItem key={e} value={e}>
-                      {e}
+                    <SelectItem key={e.id} value={e.name}>
+                      {e.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
 
-            {/* Section */}
             <div className="space-y-2">
-              <label htmlFor="section" className="text-sm font-medium">
-                Section
-              </label>
+              <label className="text-sm font-medium">Section</label>
               <Select
-                value={sectionId !== null ? sectionId.toString() : ''}
+                value={sectionId?.toString() || ''}
                 onValueChange={(value) => setSectionId(Number(value))}
               >
-                <SelectTrigger id="section">
+                <SelectTrigger>
                   <SelectValue placeholder={loading ? 'Loading...' : 'Select section'} />
                 </SelectTrigger>
                 <SelectContent>
@@ -199,11 +220,9 @@ export function StatementDialog({
                   ))}
                 </SelectContent>
               </Select>
-              {error && <p className="text-sm text-red-600">{error}</p>}
             </div>
           </div>
 
-          {/* Buttons */}
           <div className="flex justify-end gap-2">
             <Button
               type="button"
@@ -213,7 +232,7 @@ export function StatementDialog({
               Cancel
             </Button>
             <Button type="submit" className="bg-orange-600 hover:bg-orange-700">
-              {mode === 'add' ? 'Create Statement' : 'Update Statement'}
+              {mode === 'add' ? 'Create' : 'Update'}
             </Button>
           </div>
         </form>

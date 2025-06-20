@@ -1,4 +1,4 @@
-// src/emotions/dto/create-emotion.dto.ts
+// src/emotions/dto/emotion.dto.ts
 import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class CreateEmotionDto {

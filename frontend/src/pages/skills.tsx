@@ -15,6 +15,8 @@ import {
 import skillsService from './../services/skills.service' // ✅ Import service
 
 interface Skill {
+  updatedAt: string | number | Date
+  createdAt: string | number | Date
   id: number
   title: string
   description: string
@@ -120,8 +122,8 @@ export default function SkillsPage() {
                 <TableRow key={skill.id}>
                   <TableCell className="font-medium">{skill.title}</TableCell>
                   <TableCell>{skill.description}</TableCell>
-                  <TableCell>{skill.created}</TableCell>
-                  <TableCell>{skill.updated}</TableCell>
+                  <TableCell>{new Date(skill.createdAt).toLocaleDateString()}</TableCell>
+                  <TableCell>{new Date(skill.updatedAt).toLocaleDateString()}</TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <SkillDialog
