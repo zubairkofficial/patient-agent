@@ -30,10 +30,11 @@ export class JwtAuthGuard implements CanActivate {
     }
 
     try {
+      console.log("token", token)
       const decoded = this.jwtService.verify<JwtPayload>(token, {
         secret: process.env.JWT_SECRET,
       });
-
+console.log("decoded", decoded)
       if (!decoded || !decoded.id) {
         throw new UnauthorizedException({
           statusCode: 4002,
