@@ -47,7 +47,7 @@ class EmotionService {
 
   async createEmotion(data: EmotionDto) {
     try {
-      const res = await api.post('/', data);
+      const res = await api.post('/emotions/', data);
       return {
         success: true,
         data: res.data,
@@ -64,7 +64,7 @@ class EmotionService {
 
   async getAllEmotions() {
     try {
-      const res = await api.get('/getall');
+      const res = await api.get('/emotions/getall');
       return {
         success: true,
         data: res.data,
@@ -81,7 +81,7 @@ class EmotionService {
 
   async getEmotionById(id: number) {
     try {
-      const res = await api.get(`/get/${id}`);
+      const res = await api.get(`/emotions/get/${id}`);
       return {
         success: true,
         data: res.data,
@@ -98,7 +98,7 @@ class EmotionService {
 
   async updateEmotion(id: number, data: EmotionDto) {
     try {
-      const res = await api.patch(`/update/${id}`, data);
+      const res = await api.patch(`/emotions/update/${id}`, data);
       return {
         success: true,
         data: res.data,

@@ -28,7 +28,7 @@ export function Sidebar({ className }: SidebarProps) {
     <div className={cn('flex flex-col h-screen border-r bg-white', className)}>
       <div className="p-6">
         <Link to="/dashboard" className="flex items-center gap-2">
-          <img src="/logo.svg" alt="Patient Agent" className="h-8 w-8" />
+          <img src="/pa.jpg" alt="Patient Agent" className="h-8 w-8" />
           <div className="flex flex-col">
             <span className="text-xl font-bold">Patient Agent</span>
             <span className="text-sm text-muted-foreground">Admin Dashboard</span>

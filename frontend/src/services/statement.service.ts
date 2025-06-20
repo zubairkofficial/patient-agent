@@ -39,7 +39,7 @@ class StatementService {
 
   async createStatement(data: any) {
     try {
-      const res = await api.post('/', data);
+      const res = await api.post('/statement/', data);
       return {
         success: true,
         data: res.data,
@@ -56,7 +56,7 @@ class StatementService {
 
   async getAllStatements() {
     try {
-      const res = await api.get('/get');
+      const res = await api.get('/statement/get');
       return {
         success: true,
         data: res.data,
@@ -73,7 +73,7 @@ class StatementService {
 
   async getStatementById(id: number) {
     try {
-      const res = await api.get(`/get/${id}`);
+      const res = await api.get(`/statement/get/${id}`);
       return {
         success: true,
         data: res.data,
@@ -90,7 +90,7 @@ class StatementService {
 
   async getStatementsBySectionId(sectionId: number) {
     try {
-      const res = await api.get(`/section/${sectionId}`);
+      const res = await api.get(`/statement/section/${sectionId}`);
       return {
         success: true,
         data: res.data,
@@ -107,7 +107,7 @@ class StatementService {
 
   async updateStatement(id: number, data: any) {
     try {
-      const res = await api.put(`/update/${id}`, data);
+      const res = await api.put(`/statement/update/${id}`, data);
       return {
         success: true,
         data: res.data,
@@ -124,7 +124,7 @@ class StatementService {
 
   async deleteStatement(id: number) {
     try {
-      const res = await api.delete(`/delete/${id}`);
+      const res = await api.delete(`/statement/delete/${id}`);
       return {
         success: true,
         data: res.data,

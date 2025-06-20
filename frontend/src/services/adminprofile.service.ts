@@ -1,6 +1,6 @@
+// adminprofile.service.ts
 import axios from 'axios';
-import authService from './auth.service';
-import { API_BASE_URL } from '../utils/constants.ts'
+import { API_BASE_URL } from '../utils/constants.ts';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -9,16 +9,17 @@ const api = axios.create({
   },
 });
 
-// ✅ Attach JWT token to every request
+// ✅ Attach token globally (optional fallback)
 api.interceptors.request.use((config) => {
-  const token = authService.getToken();
+  const token = localStorage.getItem('token');
+  console.log("token", token)
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
 });
 
-// ✅ Handle 401 errors globally
+// ✅ Handle 401 globally
 api.interceptors.response.use(
   (res) => res,
   (err) => {
@@ -31,26 +32,15 @@ api.interceptors.response.use(
 );
 
 class AdminService {
-  private isAdmin(): boolean {
-    try {
-      const user = authService.getUser();
-      return user?.role === 'admin'; // adjust if your enum is 'ADMIN'
-    } catch {
-      return false;
-    }
-  }
-
-  // ✅ GET OpenAI Key
+  // ✅ GET OpenAI Key (with token from localStorage)
   async getOpenAIKey() {
-    if (!this.isAdmin()) {
-      return {
-        success: false,
-        message: 'Unauthorized: Admin access required',
-      };
-    }
-
     try {
-      const res = await api.get('/admin/profile/get');
+      const token = localStorage.getItem('token');
+      const res = await api.get('/admin/get', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       return {
         success: true,
         data: res.data,
@@ -65,17 +55,19 @@ class AdminService {
     }
   }
 
-  // ✅ PUT OpenAI Key
+  // ✅ PUT/UPSERT OpenAI Key (with token from localStorage)
   async upsertOpenAIKey(openaikey: string) {
-    if (!this.isAdmin()) {
-      return {
-        success: false,
-        message: 'Unauthorized: Admin access required',
-      };
-    }
-
     try {
-      const res = await api.put('/admin/profile/update', { openaikey });
+      const token = localStorage.getItem('token');
+      const res = await api.put(
+        '/admin/update',
+        { openaikey },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
       return {
         success: true,
         data: res.data,
@@ -87,6 +79,19 @@ class AdminService {
         message: error.response?.data?.message || 'Failed to update key',
         error: error.response?.data,
       };
+    }
+  }
+
+  // ✅ (Optional) Decode user role from token
+  getUserRole(): string | null {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return null;
+
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      return payload?.role || null;
+    } catch {
+      return null;
     }
   }
 }

@@ -35,9 +35,10 @@ export default function SkillsPage() {
 
   const fetchSkills = async () => {
     const response = await skillsService.getAllSkills()
-    if (response.success) {
+    if (response.success && Array.isArray(response.data)) {
       setSkills(response.data)
     } else {
+      setSkills([])
       console.error(response.message)
     }
   }
