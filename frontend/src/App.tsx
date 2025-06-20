@@ -1,25 +1,30 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
-import { AuthLayout } from './components/auth/auth-layout'
-import LoginPage from './pages/auth/login'
-import ForgotPasswordPage from './pages/auth/forgot-password'
-import VerificationCodePage from './pages/auth/verify-code'
-import DashboardPage from './pages/dashboard'
-import StatementsPage from './pages/statements'
-import EmotionsPage from './pages/emotions'
-import RegisterForm from './components/auth/register-form'
-import SectionsPage from './pages/sections'
-import SkillsPage from './pages/skills'
-import AdminKeyPage from './pages/apikey'
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
+import { AuthLayout } from "./components/auth/auth-layout";
+import LoginPage from "./pages/auth/login";
+import ForgotPasswordPage from "./pages/auth/forgot-password";
+import VerificationCodePage from "./pages/auth/verify-code";
+import DashboardPage from "./pages/dashboard";
+import StatementsPage from "./pages/statements";
+import EmotionsPage from "./pages/emotions";
+import RegisterForm from "./components/auth/register-form";
+import SectionsPage from "./pages/sections";
+import SkillsPage from "./pages/skills";
+import AdminKeyPage from "./pages/apikey";
 
 // ✅ Dummy auth service (replace this with real implementation)
 const isAuthenticated = () => {
-  return !!localStorage.getItem('token') // Or use your authService.getToken()
-}
+  return !!localStorage.getItem("token"); // Or use your authService.getToken()
+};
 
 // ✅ Protected Route wrapper
-const PrivateRoute = ({ children }: { children: JSX.Element }) => {
-  return isAuthenticated() ? children : <Navigate to="/login" replace />
-}
+const PrivateRoute = ({ children }: { children: any }) => {
+  return isAuthenticated() ? children : <Navigate to="/login" replace />;
+};
 
 export default function App() {
   return (
@@ -107,5 +112,5 @@ export default function App() {
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
-  )
+  );
 }
