@@ -23,14 +23,16 @@ import { Doctor } from 'src/model/doctorprofile.model';
 
 @Injectable()
 export class AuthService {
-  private logger = new Logger()
+  private logger = new Logger();
   constructor(
     private jwtService: JwtService,
     private emailService: EmailService,
-  ) { }
+  ) {}
 
   async register(registerDto: RegisterDto) {
-    const existingUser = await User.findOne({ where: { email: registerDto.email } });
+    const existingUser = await User.findOne({
+      where: { email: registerDto.email },
+    });
     if (existingUser) {
       throw new ConflictException('Email already registered');
     }
@@ -43,23 +45,27 @@ export class AuthService {
       lastName: registerDto.lastName,
       email: registerDto.email,
       password: hashedPassword,
-      role: "user",
+      role: 'user',
       verificationToken,
       isEmailVerified: false,
     }).then(async (user) => {
       await Doctor.create({
-        userId: user.id
-      })
-      this.logger.log("created doctor")
-    })
-
+        userId: user.id,
+      });
+      this.logger.log('created doctor');
+    });
 
     // await this.emailService.sendVerificationEmail(user.email, verificationToken);
 
-    return { message: 'Registration successful. Please check your email for verification.' };
+    return {
+      message:
+        'Registration successful. Please check your email for verification.',
+    };
   }
 
   async login(loginDto: LoginDto) {
+    this.logger.log('hello this is lola', process.env.PORT, 'dsf');
+
     const email = loginDto.email?.trim();
     const password = loginDto.password;
 
@@ -102,7 +108,9 @@ export class AuthService {
   }
 
   async verifyEmail(verifyEmailDto: VerifyEmailDto) {
-    const user = await User.findOne({ where: { verificationToken: verifyEmailDto.token } });
+    const user = await User.findOne({
+      where: { verificationToken: verifyEmailDto.token },
+    });
 
     if (!user) {
       throw new BadRequestException('Invalid verification token');
@@ -120,7 +128,9 @@ export class AuthService {
   }
 
   async forgotPassword(forgotPasswordDto: ForgotPasswordDto) {
-    const user = await User.findOne({ where: { email: forgotPasswordDto.email } });
+    const user = await User.findOne({
+      where: { email: forgotPasswordDto.email },
+    });
     if (!user) {
       throw new BadRequestException('User not found');
     }
