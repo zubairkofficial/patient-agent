@@ -13,10 +13,7 @@ import { Doctor } from 'src/model/doctorprofile.model';
   imports: [
     SequelizeModule.forFeature([User , Doctor]),
     PassportModule,
-    JwtModule.register({
-      secret: process.env.JWT_SECRET,
-      signOptions: { expiresIn: '24h' },
-    }),
+   
     ConfigModule
   ],
   controllers: [AuthController],

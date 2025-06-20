@@ -20,6 +20,7 @@ import {
 import { Op } from 'sequelize';
 import { User } from '../../model/user.model';
 import { Doctor } from 'src/model/doctorprofile.model';
+import * as jwt from 'jsonwebtoken';
 
 @Injectable()
 export class AuthService {
@@ -64,7 +65,7 @@ export class AuthService {
   }
 
   async login(loginDto: LoginDto) {
-    this.logger.log('hello this is lola', process.env.PORT, 'dsf');
+    this.logger.log('hello this is lola login', process.env.PORT, 'dsf');
 
     const email = loginDto.email?.trim();
     const password = loginDto.password;
@@ -90,11 +91,17 @@ export class AuthService {
       throw new UnauthorizedException('Please verify your email first');
     }
 
-    const token = this.jwtService.sign({
-      id: user.id,
-      email: user.email,
-      role: user.role,
-    });
+    const token = jwt.sign(
+      {
+        id: user.id,
+        email: user.email,
+        role: user.role,
+      },
+      `${process.env.JWT_SECRET}`,
+      {
+        expiresIn: '1d',
+      },
+    );
 
     return {
       token,

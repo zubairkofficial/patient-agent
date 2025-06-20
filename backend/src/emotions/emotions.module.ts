@@ -4,19 +4,11 @@ import { EmotionsService } from './emotions.service';
 import { EmotionsController } from './emotions.controller';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { Emotions } from '../model/emotions.model';
-import { JwtModule } from '@nestjs/jwt';
+import { JwtModule, JwtService } from '@nestjs/jwt';
 
 @Module({
-  imports: [
-    SequelizeModule.forFeature([Emotions]),
-    
-    // 👇 Make sure JwtModule is imported
-    JwtModule.register({ 
-      secret: process.env.JWT_SECRET, // Set your actual secret here
-      signOptions: { expiresIn: '24h' },
-    }),
-  ],
+  imports: [SequelizeModule.forFeature([Emotions])],
   controllers: [EmotionsController],
-  providers: [EmotionsService],
+  providers: [EmotionsService, JwtService],
 })
 export class EmotionsModule {}
