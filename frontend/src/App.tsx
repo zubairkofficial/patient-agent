@@ -11,11 +11,21 @@ import SectionsPage from './pages/sections'
 import SkillsPage from './pages/skills'
 import AdminKeyPage from './pages/apikey'
 
+// ✅ Dummy auth service (replace this with real implementation)
+const isAuthenticated = () => {
+  return !!localStorage.getItem('token') // Or use your authService.getToken()
+}
+
+// ✅ Protected Route wrapper
+const PrivateRoute = ({ children }: { children: JSX.Element }) => {
+  return isAuthenticated() ? children : <Navigate to="/login" replace />
+}
+
 export default function App() {
   return (
     <Router>
       <Routes>
-        {/* Public routes */}
+        {/* Public Routes */}
         <Route
           path="/login"
           element={
@@ -40,14 +50,59 @@ export default function App() {
             </AuthLayout>
           }
         />
-        <Route path="/signup" element={<RegisterForm />} />        {/* Protected routes */}        <Route path="/dashboard" element={<DashboardPage />} />
-        <Route path="/statements" element={<StatementsPage />} />
-        <Route path="/apikey" element={<AdminKeyPage />} />
-        <Route path="/emotions" element={<EmotionsPage />} />
-        <Route path="/sections" element={<SectionsPage />} />
-        <Route path="/skills" element={<SkillsPage />} />
+        <Route path="/signup" element={<RegisterForm />} />
 
-        {/* Default redirects */}
+        {/* Protected Routes */}
+        <Route
+          path="/dashboard"
+          element={
+            <PrivateRoute>
+              <DashboardPage />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/statements"
+          element={
+            <PrivateRoute>
+              <StatementsPage />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/apikey"
+          element={
+            <PrivateRoute>
+              <AdminKeyPage />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/emotions"
+          element={
+            <PrivateRoute>
+              <EmotionsPage />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/sections"
+          element={
+            <PrivateRoute>
+              <SectionsPage />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/skills"
+          element={
+            <PrivateRoute>
+              <SkillsPage />
+            </PrivateRoute>
+          }
+        />
+
+        {/* Default Redirects */}
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
