@@ -42,4 +42,6 @@ export class Section extends Model {
 
   @BelongsToMany(() => Skills, () => JoinSectionSkills)
   skillList: Skills[];
+    skills: any;
+    skillId: any;
 }

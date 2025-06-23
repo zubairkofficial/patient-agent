@@ -9,6 +9,7 @@ import {
 import { IsNotEmpty } from 'class-validator';
 import { Doctor } from './doctorprofile.model';
 import { Statement } from './statement.model';
+import { string } from 'zod';
 
 @Table({
   tableName: 'response',
@@ -35,6 +36,12 @@ export class Response extends Model {
     unique: true,
   })
   declare rating: number;
+
+  @Column({
+    type: DataType.TEXT,
+    allowNull: false,
+  })
+  declare botremarks: string;
 
     @ForeignKey(() => Statement)
     @Column({

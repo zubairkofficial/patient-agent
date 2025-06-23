@@ -1,55 +1,64 @@
-// src/components/forms/LoginForm.tsx
-import { useState } from 'react';
-import { Eye, EyeOff } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
+import { useState } from 'react'
+import { Eye, EyeOff } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
-import authService from '@/services/auth.service';
-import { useNavigate, Link } from 'react-router-dom';
+} from '@/components/ui/card'
+import authService from '@/services/auth.service'
+import { useNavigate, Link } from 'react-router-dom'
 
 export function LoginForm() {
-  const [showPassword, setShowPassword] = useState(false);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const navigate = useNavigate();
+  const [showPassword, setShowPassword] = useState(false)
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  const navigate = useNavigate()
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
+    e.preventDefault()
+    setLoading(true)
+    setError('')
 
     try {
-      const credentials = { email, password };
-      const result = await authService.login(credentials);
+      const credentials = { email, password }
+      const result = await authService.login(credentials)
 
       if (result.success) {
-        const token = result.data.token;
-        const user = result.data.user;
+        const { token, user } = result.data
 
-        localStorage.setItem('token', token);
-        localStorage.setItem('user', JSON.stringify(user));
+        // Save data in localStorage
+        localStorage.setItem('token', token)
+        localStorage.setItem('userId', user.id)
+        localStorage.setItem('role', user.role)
+        localStorage.setItem('email', user.email)
+        localStorage.setItem('firstName', user.firstName)
+        localStorage.setItem('lastName', user.lastName)
+        localStorage.setItem('user', JSON.stringify(user))
 
-        navigate('/dashboard');
+        // Role-based navigation
+        if (user.role === 'admin') {
+          navigate('/admin/dashboard')
+        } else {
+          navigate('/dashboard')
+        }
       } else {
-        setError(result.message || 'Invalid credentials');
+        setError(result.message || 'Invalid credentials')
       }
     } catch (err) {
-      console.error('Login error:', err);
-      setError('Something went wrong. Please try again.');
+      console.error('Login error:', err)
+      setError('Something went wrong. Please try again.')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   return (
     <Card className="w-full max-w-[400px] mx-auto">
@@ -96,28 +105,37 @@ export function LoginForm() {
               </button>
             </div>
           </div>
+
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <Checkbox id="remember" />
-              <Label htmlFor="remember" className="text-sm">Remember me</Label>
+              <Label htmlFor="remember" className="text-sm">
+                Remember me
+              </Label>
             </div>
             <Link to="/forgot-password" className="text-sm text-blue-600 hover:underline">
               Forgot password?
             </Link>
           </div>
+
           {error && <p className="text-sm text-red-500">{error}</p>}
+
           <Button type="submit" className="w-full" disabled={loading}>
             {loading ? 'Signing in...' : 'Sign In'}
           </Button>
+
           <div className="text-center text-sm">
-            Don't have an account?{' '}
-            <Link to="/signup" className="text-blue-600 hover:underline">Sign up</Link>
+            Don&apos;t have an account?{' '}
+            <Link to="/signup" className="text-blue-600 hover:underline">
+              Sign up
+            </Link>
           </div>
+
           <p className="text-xs text-center text-muted-foreground">
             By signing in, you agree to our Terms of Service and Privacy Policy
           </p>
         </form>
       </CardContent>
     </Card>
-  );
+  )
 }

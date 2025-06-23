@@ -17,6 +17,12 @@ export class SectionController {
     return this.sectionService.create(body);
   }
 
+  @Get(':id/skills')
+  @Roles(Role.ADMIN)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+getSkillsBySection(@Param('id') id: number) {
+  return this.sectionService.getSkillsBySection(id);
+}
 
   @Get('/')
   @Roles(Role.ADMIN)

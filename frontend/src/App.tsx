@@ -4,14 +4,21 @@ import { AuthLayout } from './components/auth/auth-layout'
 import LoginPage from './pages/auth/login'
 import ForgotPasswordPage from './pages/auth/forgot-password'
 import VerificationCodePage from './pages/auth/verify-code'
-import DashboardPage from './pages/dashboard'
-import StatementsPage from './pages/statements'
-import EmotionsPage from './pages/emotions'
+import DashboardPage from './pages/Dashboard/index'
+import StatementsPage from './admin/Pages/statements'
+import EmotionsPage from './admin/Pages/emotions'
 import RegisterForm from './components/auth/register-form'
-import SectionsPage from './pages/sections'
-import SkillsPage from './pages/skills'
-import AdminKeyPage from './pages/apikey'
-
+import SectionsPage from './admin/Pages/sections'
+import SkillsPage from './admin/Pages/skills'
+import { DashboardLayout } from './admin/components/layout/dashboard-layout'
+import AdminKeyPage from './admin/Pages/apikey'
+// import userRoutes   from './pages/user/routes';
+import UserLayout from './components/layout/UserLayout';
+import UserHome from './pages/user/Home';
+import UserProfile from './pages/user/Profile';
+import UserSettings from './pages/user/Settings';
+import Statements from './pages/user/statement/Statements'
+import StatementResponse from './pages/user/statement/statement-response'
 // ✅ Dummy auth service (replace this with real implementation)
 const isAuthenticated = () => {
   return !!localStorage.getItem('token') // Or use your authService.getToken()
@@ -19,7 +26,7 @@ const isAuthenticated = () => {
 
 // ✅ Protected Route wrapper
 const PrivateRoute = ({ children }: { children: React.ReactElement }) => {
-  return isAuthenticated() ? children : <Navigate to="/login" replace />
+  return isAuthenticated() ? children : <Navigate to="/" replace />
 }
 
 export default function App() {
@@ -28,7 +35,7 @@ export default function App() {
       <Routes>
         {/* Public Routes */}
         <Route
-          path="/login"
+          path="/"
           element={
             <AuthLayout>
               <LoginPage />
@@ -52,10 +59,17 @@ export default function App() {
           }
         />
         <Route path="/signup" element={<RegisterForm />} />
-
+        <Route path="/user" element={<UserLayout />}>
+          <Route path="home" element={<UserHome />} />
+          <Route path="profile" element={<UserProfile />} />
+          <Route path="settings" element={<UserSettings />} />
+          <Route path="section/:id" element={<Statements />} />
+          <Route path="section/:id/statement/:statementId" element={<StatementResponse />} />
+          <Route index element={<UserHome />} />
+        </Route>
         {/* Protected Routes */}
         <Route
-          path="/dashboard"
+          path="/admin/dashboard"
           element={
             <PrivateRoute>
               <DashboardPage />
@@ -99,6 +113,15 @@ export default function App() {
           element={
             <PrivateRoute>
               <SkillsPage />
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/dashboard"
+          element={
+            <PrivateRoute>
+              <DashboardLayout children={undefined} />
             </PrivateRoute>
           }
         />

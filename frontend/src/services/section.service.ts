@@ -37,9 +37,25 @@ class SectionService {
     }
   }
 
-  // ✅ Get all sections
-  async getAllSections() {
-    try {
+  // get section id by skills 
+  async getSkillsBySectionId(id: number) {
+  try {
+    const response = await api.get(`/section/${id}/skills`);
+    return {
+      success: true,
+      data: response.data,
+    };
+  } catch (error: any) {
+    return {
+      success: false,
+      message: error.response?.data?.message || 'Failed to fetch skills',
+    };
+  }
+}
+
+// ✅ Get all sections
+async getAllSections() {
+  try {
       const response = await api.get('/section/');
       return {
         success: true,

@@ -30,7 +30,17 @@ export class SectionService {
         }
         console.log('ullu ka patha')
         return section;
-    }
+    }  
+
+async getSkillsBySection(sectionId: number) {
+  const section = await this.sectionModel.findByPk(sectionId, {
+    include: [{ model: Skills, through: { attributes: [] } }],
+  });
+
+  if (!section) throw new NotFoundException('Section not found');
+
+  return section.skillId;
+}
 
     async findAll() {
         return await this.sectionModel.findAll({
