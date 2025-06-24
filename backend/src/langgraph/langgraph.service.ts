@@ -26,7 +26,7 @@ export class LanggraphService {
   constructor(private configService: ConfigService) {
     this.model = new ChatGoogleGenerativeAI({
       model: 'gemini-1.5-flash',
-      apiKey: this.configService.get<string>('GOOGLE_API_KEY'),
+      apiKey: process.env.GOOGLE_API_KEY,
       temperature: 0.7, // For more natural medical responses
       maxOutputTokens: 1500, // Increased for structured response
     });
@@ -277,7 +277,7 @@ It depends on the Medical Areas/Skills given in the prompt, the more the doctor 
         ],
       });
 
-      console.log("stateme tlola")
+      console.log('stateme tlola');
       if (!statement) {
         throw new Error(`Statement with ID ${dto.statementId} not found`);
       }
