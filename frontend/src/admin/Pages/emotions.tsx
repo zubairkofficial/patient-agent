@@ -12,6 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import emotionService from '../../services/emotions.service'
 
 interface Emotion {
@@ -25,6 +26,8 @@ interface Emotion {
 export default function EmotionsPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [emotions, setEmotions] = useState<Emotion[]>([])
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [deleteId, setDeleteId] = useState<number | null>(null)
 
   const fetchEmotions = async () => {
     const res = await emotionService.getAllEmotions()
@@ -49,9 +52,26 @@ export default function EmotionsPage() {
     if (res.success) fetchEmotions()
   }
 
-  const handleDelete = async (id: number) => {
-    const res = await emotionService.deleteEmotion(id)
-    if (res.success) fetchEmotions()
+  const handleDelete = (id: number) => {
+    setDeleteId(id)
+    setDeleteDialogOpen(true)
+  }
+
+  const confirmDelete = async () => {
+    if (deleteId === null) return
+    const res = await emotionService.deleteEmotion(deleteId)
+    if (res.success) {
+      fetchEmotions()
+    } else {
+      console.error(res.message)
+    }
+    setDeleteDialogOpen(false)
+    setDeleteId(null)
+  }
+
+  const cancelDelete = () => {
+    setDeleteDialogOpen(false)
+    setDeleteId(null)
   }
 
   const filteredEmotions = emotions.filter(
@@ -138,6 +158,20 @@ export default function EmotionsPage() {
           </Table>
         </div>
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Emotion</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">Are you sure you want to delete this emotion?</div>
+          <DialogFooter className="flex justify-end gap-2">
+            <Button variant="outline" onClick={cancelDelete}>Cancel</Button>
+            <Button variant="destructive" onClick={confirmDelete}>Delete</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   )
 }

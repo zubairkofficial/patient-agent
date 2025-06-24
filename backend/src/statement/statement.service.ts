@@ -14,7 +14,7 @@ export class StatementService {
   constructor(
     @InjectModel(Statement)
     private statementModel: typeof Statement,
-  ) {}
+  ) { }
 
   async create(dto: CreateStatementDto) {
     const statement = await this.statementModel.create({
@@ -50,6 +50,9 @@ export class StatementService {
           model: Emotions,
           attributes: ['id', 'name'],
         },
+        {
+          model: Section
+        }
       ],
     });
   }
@@ -62,10 +65,13 @@ export class StatementService {
         },
         {
           model: Section,
+          include: [
+            {
+              model: Skills,
+            }
+          ]
         },
-        {
-          model: Skills,
-        },
+
       ],
     });
 

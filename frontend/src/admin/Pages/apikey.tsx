@@ -54,7 +54,7 @@ export default function AdminProfilePage() {
             <h1 className="text-3xl font-bold flex items-center gap-2">
               <Key className="h-8 w-8" /> Admin API Key
             </h1>
-            <p className="text-muted-foreground">Set or update the OpenAI admin key</p>
+            <p className="text-muted-foreground">Set or update the Gemini admin key</p>
           </div>
         </div>
 

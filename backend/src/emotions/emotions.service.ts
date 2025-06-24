@@ -1,4 +1,3 @@
-// src/emotions/emotions.service.ts
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Emotions } from '../model/emotions.model';
@@ -26,7 +25,14 @@ export class EmotionsService {
   }
 
   async update(id: number, dto: UpdateEmotionDto): Promise<Emotions> {
-    const emotion = await this.findOne(id);
+    const emotion = await this.findOne(id); 
     return emotion.update(dto);
+  }
+
+  // ✅ Delete Emotion by ID
+  async remove(id: number): Promise<{ message: string }> {
+    const emotion = await this.findOne(id);
+    await emotion.destroy();
+    return { message: 'Emotion deleted successfully' };
   }
 }

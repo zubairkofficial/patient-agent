@@ -80,25 +80,25 @@ export function ActivityList() {
       <CardContent>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           <div className="bg-blue-50 rounded-lg p-3 text-center">
-            <div className="text-xs text-blue-700 font-semibold">Sections</div>
+            <div className="text-xs text-blue-700 font-semibold">Total Sections</div>
             <div className="text-2xl font-bold">
               {sectionCount !== null ? sectionCount : '...'}
             </div>
           </div>
           <div className="bg-green-50 rounded-lg p-3 text-center">
-            <div className="text-xs text-green-700 font-semibold">Statements</div>
+            <div className="text-xs text-green-700 font-semibold">Total Statements</div>
             <div className="text-2xl font-bold">
               {statementCount !== null ? statementCount : '...'}
             </div>
           </div>
           <div className="bg-purple-50 rounded-lg p-3 text-center">
-            <div className="text-xs text-purple-700 font-semibold">Emotions</div>
+            <div className="text-xs text-purple-700 font-semibold">Total Emotions</div>
             <div className="text-2xl font-bold">
               {emotionCount !== null ? emotionCount : '...'}
             </div>
           </div>
           <div className="bg-yellow-50 rounded-lg p-3 text-center">
-            <div className="text-xs text-yellow-700 font-semibold">Skills</div>
+            <div className="text-xs text-yellow-700 font-semibold">Total Skills</div>
             <div className="text-2xl font-bold">
               {skillCount !== null ? skillCount : '...'}
             </div>

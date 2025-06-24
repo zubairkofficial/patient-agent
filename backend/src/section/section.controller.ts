@@ -12,7 +12,7 @@ import {
 } from '@nestjs/common';
 import { SectionService } from './section.service';
 import { Roles } from 'src/emotions/auth/roles.decorator';
-import { Role } from 'src/utils/roles.enum';
+import { Role } from 'src/utils/roles. enum';
 import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/guards/role.guard';
 

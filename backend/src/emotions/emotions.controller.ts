@@ -1,4 +1,3 @@
-// src/emotions/emotions.controller.ts
 import {
   Controller,
   Get,
@@ -6,6 +5,7 @@ import {
   Body,
   Param,
   Patch,
+  Delete,
   UseGuards,
   ParseIntPipe,
 } from '@nestjs/common';
@@ -17,7 +17,7 @@ import { Role } from 'src/utils/roles.enum';
 import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
 
 @Controller('emotions')
-@UseGuards(JwtAuthGuard, RolesGuard) // ✅ apply guards at controller level
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class EmotionsController {
   constructor(private readonly emotionsService: EmotionsService) {}
 
@@ -43,5 +43,12 @@ export class EmotionsController {
   @Roles(Role.ADMIN)
   update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateEmotionDto) {
     return this.emotionsService.update(id, dto);
+  }
+
+  // ✅ DELETE Emotion by ID
+  @Delete('delete/:id')
+  @Roles(Role.ADMIN)
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.emotionsService.remove(id);
   }
 }

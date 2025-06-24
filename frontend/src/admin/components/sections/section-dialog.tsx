@@ -39,7 +39,14 @@ export function SectionDialog({
   defaultValues,
   onSubmit,
   trigger,
-}: SectionDialogProps) {
+  open: controlledOpen,
+  onOpenChange,
+  loading: controlledLoading,
+}: SectionDialogProps & {
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  loading?: boolean;
+}) {
   const [open, setOpen] = useState(false)
   const [title, setTitle] = useState(defaultValues?.title || '')
   const [selectedSkills, setSelectedSkills] = useState<string[]>(defaultValues?.skills || [])
@@ -47,16 +54,27 @@ export function SectionDialog({
   const [skills, setSkills] = useState<Skill[]>([])
   const [loadingSkills, setLoadingSkills] = useState(false)
 
+  // Use controlled open/loading if provided
+  const isOpen = controlledOpen !== undefined ? controlledOpen : open;
+  const isLoading = controlledLoading !== undefined ? controlledLoading : loadingSkills;
+
   useEffect(() => {
-    const fetchSkills = async () => {
-      setLoadingSkills(true)
-      const res = await skillsService.getAllSkills()
-      if (res.success) setSkills(res.data)
-      else console.error('Failed to load skills:', res.message)
-      setLoadingSkills(false)
+    if (isOpen) {
+      setTitle(defaultValues?.title || '')
+      setSelectedSkills(defaultValues?.skills || [])
+      setDescription(defaultValues?.description || '')
+      fetchSkills()
     }
-    fetchSkills()
-  }, [])
+    // eslint-disable-next-line
+  }, [isOpen, defaultValues])
+
+  const fetchSkills = async () => {
+    setLoadingSkills(true)
+    const res = await skillsService.getAllSkills()
+    if (res.success) setSkills(res.data)
+    else console.error('Failed to load skills:', res.message)
+    setLoadingSkills(false)
+  }
 
   const skillOptions = skills.map((s) => ({
     value: s.id,
@@ -79,7 +97,7 @@ export function SectionDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={isOpen} onOpenChange={onOpenChange ? onOpenChange : setOpen}>
       <DialogTrigger asChild>
         {trigger || (
           <Button className="bg-purple-600 hover:bg-purple-700">
@@ -96,7 +114,9 @@ export function SectionDialog({
               : 'Update the section information below.'}
           </DialogDescription>
         </DialogHeader>
-
+        {isLoading ? (
+          <div className="py-8 text-center">Loading...</div>
+        ) : (
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Title */}
           <div className="space-y-2">
@@ -111,13 +131,12 @@ export function SectionDialog({
               required
             />
           </div>
-
           {/* Multi-select with react-select */}
           <div className="space-y-2">
             <label className="text-sm font-medium">Select Skills</label>
             <Select
               isMulti
-              isLoading={loadingSkills}
+              isLoading={isLoading}
               options={skillOptions}
               value={skillOptions.filter((s) => selectedSkills.includes(s.value))}
               onChange={handleSkillChange}
@@ -126,7 +145,6 @@ export function SectionDialog({
               classNamePrefix="react-select"
             />
           </div>
-
           {/* Description */}
           <div className="space-y-2">
             <label htmlFor="description" className="text-sm font-medium">
@@ -140,10 +158,9 @@ export function SectionDialog({
               required
             />
           </div>
-
           {/* Buttons */}
           <div className="flex justify-end gap-2">
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+            <Button type="button" variant="outline" onClick={() => (onOpenChange ? onOpenChange(false) : setOpen(false))}>
               Cancel
             </Button>
             <Button type="submit" className="bg-purple-600 hover:bg-purple-700">
@@ -151,6 +168,7 @@ export function SectionDialog({
             </Button>
           </div>
         </form>
+        )}
       </DialogContent>
     </Dialog>
   )

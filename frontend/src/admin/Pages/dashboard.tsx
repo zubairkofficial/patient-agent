@@ -60,7 +60,7 @@ export default function DashboardPage() {
             iconClassName="text-blue-600"
           />
           <StatsCard
-            title="Emotions"
+            title="Total Emotions"
             value={counts.emotions.toString()}
             description="+1 this week"
             icon={Smile}
@@ -74,7 +74,7 @@ export default function DashboardPage() {
             iconClassName="text-purple-600"
           />
           <StatsCard
-            title="Statements"
+            title="Total Statements"
             value={counts.statements.toString()}
             description="+12 this week"
             icon={MessageSquare}
