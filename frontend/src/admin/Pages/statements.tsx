@@ -31,7 +31,7 @@ interface Emotion {
 interface Statement {
   id: number;
   statement: string;
-  skill?: number | string;
+
   emotion?: Emotion[]; // ✅ updated key to match API response
   sectionId: string;
   createdAt: string;
@@ -50,7 +50,6 @@ interface Section {
 
 export default function StatementsPage() {
   const [statements, setStatements] = useState<Statement[]>([]);
-  const [skills, setSkills] = useState<Skill[]>([]);
   const [sections, setSections] = useState<Section[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -61,7 +60,6 @@ export default function StatementsPage() {
 
   useEffect(() => {
     fetchStatements();
-    fetchSkills();
     fetchSections();
   }, []);
 
@@ -74,12 +72,7 @@ export default function StatementsPage() {
     }
   };
 
-  const fetchSkills = async () => {
-    const response = await skillsService.getAllSkills();
-    if (response.success) {
-      setSkills(response.data);
-    }
-  };
+  
 
   const fetchSections = async () => {
     const response = await sectionService.getAllSections();
@@ -240,14 +233,12 @@ export default function StatementsPage() {
                                   ? editData.emotion.map((e: any) => e.id)
                                   : [],
                                 sectionId: editData.section?.id || Number(editData.sectionId),
-                                skill: 0, // Remove skill dropdown, but keep prop for type
                                 emotionId: [], // Remove emotionId dropdown, but keep prop for type
                               }
                             : {
                                 statement: s.statement,
                                 emotionIds: s.emotion?.map((e) => e.id) || [],
                                 sectionId: Number(s.sectionId),
-                                skill: 0,
                                 emotionId: [],
                               }
                         }
