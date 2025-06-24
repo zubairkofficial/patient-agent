@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import statementService from '@/services/statement.service';
 import sectionService from '@/services/section.service';
 
@@ -36,12 +36,14 @@ interface Statement {
   statement: string;
   completed?: boolean;
   completedDate?: string;
-  emotions?: Emotion[]; // Correct spelling
+  emotions?: Emotion[];
   sectionId: number;
+  hasResponse?: boolean; // New field to track response
 }
 
 export default function Statements() {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const [statements, setStatements] = useState<Statement[]>([]);
   const [sectionMeta, setSectionMeta] = useState<SectionMeta | null>(null);
   const [loading, setLoading] = useState(true);
@@ -54,14 +56,15 @@ export default function Statements() {
     }
   }, [id]);
 
+  // Updated: Mark completed if response property exists and is truthy
   const loadStatements = async (sectionId: number) => {
     setLoading(true);
     const res = await statementService.getStatementsBySectionId(sectionId);
     if (res.success) {
-      // Normalize emotion(s)
       const normalized = res.data.map((s: any) => ({
         ...s,
-        emotions: s.emotion || [], // Fix backend prop
+        emotions: s.emotion || [],
+        completed: !!s.response, // Mark as completed if response exists
       }));
       setStatements(normalized);
     } else {
@@ -165,21 +168,21 @@ export default function Statements() {
                 <div className="text-gray-700 mb-2">{s.statement}</div>
                 {s.completed ? (
                   <div className="flex items-center gap-2 text-xs text-green-700">
-                    <BadgeCheck size={16} /> Completed on {s.completedDate}
+                    <BadgeCheck size={16} /> Completed{ s.completedDate ? ` on ${s.completedDate}` : ''}
                   </div>
                 ) : (
                   <div className="flex justify-end">
-                    <Button variant="outline">Start</Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => navigate(`/user/section/${id}/statement/${s.id}`)}
+                    >
+                      Start
+                    </Button>
                   </div>
                 )}
               </CardContent>
             </Card>
           ))}
-        </div>
-        <div className="flex justify-end mt-8">
-          <Button className="bg-blue-600 text-white px-8 py-2 rounded-lg font-semibold hover:bg-blue-700">
-            Continue Next Exercise
-          </Button>
         </div>
       </div>
     </div>

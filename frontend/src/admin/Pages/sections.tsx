@@ -1,4 +1,3 @@
-// src/pages/SectionsPage.tsx
 import { useEffect, useState, type ReactNode } from 'react';
 import { Layers, Search, PencilIcon, Trash2Icon } from 'lucide-react';
 import { SectionDialog } from '@/admin/components/sections/section-dialog';
@@ -15,16 +14,19 @@ import {
 } from '@/components/ui/table';
 import sectionService from '@/services/section.service';
 
-interface Section {
-  List: ReactNode;
-  updatedAt: string | number | Date;
-  createdAt: string | number | Date;
+interface Skill {
   id: number;
   title: string;
-  skill: string;
+}
+
+interface Section {
+  id: number;
+  title: string;
+  skillList: Skill[];
   category: string;
   description: string;
-  created: string;
+  createdAt: string | number | Date;
+  List?: ReactNode;
 }
 
 export default function SectionsPage() {
@@ -71,13 +73,15 @@ export default function SectionsPage() {
     }
   };
 
-  const filteredSections = sections.filter(
-    (section) =>
+  const filteredSections = sections.filter((section) => {
+    const skills = section.skillList.map((s) => s.title).join(' ').toLowerCase();
+    return (
       section.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       section.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      section.skill.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      skills.includes(searchQuery.toLowerCase()) ||
       section.category.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+    );
+  });
 
   return (
     <DashboardLayout>
@@ -112,10 +116,9 @@ export default function SectionsPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>Title</TableHead>
-                <TableHead>Skill</TableHead>
+                <TableHead>Skills</TableHead>
                 <TableHead className="w-[400px]">Description</TableHead>
                 <TableHead>Created</TableHead>
-                <TableHead>Updated</TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -124,21 +127,30 @@ export default function SectionsPage() {
                 <TableRow key={section.id}>
                   <TableCell className="font-medium">{section.title}</TableCell>
                   <TableCell>
-                    <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs">
-                      {section.List}
-                    </span>
+                    <div className="flex flex-wrap gap-1">
+                      {section.skillList?.map((skill) => (
+                        <span
+                          key={skill.id}
+                          className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full text-xs"
+                        >
+                          {skill.title}
+                        </span>
+                      ))}
+                    </div>
                   </TableCell>
-                  <TableCell>{section.description}</TableCell>
-                    <TableCell>{new Date(section.createdAt).toLocaleDateString()}</TableCell>
-                  <TableCell>{new Date(section.updatedAt).toLocaleDateString()}</TableCell>
+                  <TableCell>
+                    {section.description.length > 70
+                      ? section.description.slice(0, 70) + '...'
+                      : section.description}
+                  </TableCell>
+                  <TableCell>{new Date(section.createdAt).toLocaleDateString()}</TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <SectionDialog
                         mode="edit"
                         defaultValues={{
                           title: section.title,
-                          skill: section.skill,
-                          category: section.category,
+                          skills: section.skillList.map((skill) => String(skill.id)),
                           description: section.description,
                         }}
                         onSubmit={(data) => handleUpdate(section.id, data)}

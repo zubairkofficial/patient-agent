@@ -18,14 +18,14 @@ export class SectionController {
   }
 
   @Get(':id/skills')
-  @Roles(Role.ADMIN)
+  @Roles(Role.ADMIN , Role.USER)
   @UseGuards(JwtAuthGuard, RolesGuard)
 getSkillsBySection(@Param('id') id: number) {
   return this.sectionService.getSkillsBySection(id);
 }
 
   @Get('/')
-  @Roles(Role.ADMIN)
+  @Roles(Role.ADMIN , Role.USER)
   @UseGuards(JwtAuthGuard, RolesGuard)
   async findAll() {
     return this.sectionService.findAll();

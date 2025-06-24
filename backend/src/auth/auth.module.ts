@@ -8,6 +8,7 @@ import { SequelizeModule } from '@nestjs/sequelize';
 import { ConfigModule } from '@nestjs/config';
 import { User } from '../model/user.model';
 import { Doctor } from 'src/model/doctorprofile.model';
+import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
 
 @Module({
   imports: [
@@ -17,7 +18,7 @@ import { Doctor } from 'src/model/doctorprofile.model';
     ConfigModule
   ],
   controllers: [AuthController],
-  providers: [AuthService, EmailService, JwtService],
+  providers: [AuthService, EmailService, JwtService , JwtAuthGuard],
   exports: [AuthService],
 })
 export class AuthModule {}

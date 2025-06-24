@@ -4,7 +4,7 @@ import { Card } from '@/components/ui/card';
 import { Lightbulb, ArrowLeft } from 'lucide-react';
 import * as React from 'react';
 import statementService from '@/services/statement.service';
-import axios from 'axios';
+import responseService from '@/services/response.service';
 
 interface Emotion {
   id: number;
@@ -39,23 +39,26 @@ export default function StatementResponse() {
   ];
 
   React.useEffect(() => {
-    if (statementId) {
-      fetchStatement(parseInt(statementId, 10));
-    }
+    if (statementId) fetchStatement(Number(statementId));
   }, [statementId]);
 
   const fetchStatement = async (stmtId: number) => {
-    setLoading(true);
-    const res = await statementService.getStatementById(stmtId);
-    if (res.success) {
-      setStatement({
-        ...res.data,
-        emotions: res.data.emotion || [],
-      });
-    } else {
-      setError(res.message);
+    try {
+      setLoading(true);
+      const res = await statementService.getStatementById(stmtId);
+      if (res.success) {
+        setStatement({
+          ...res.data,
+          emotions: res.data.emotion || [],
+        });
+      } else {
+        setError(res.message || 'Failed to load statement');
+      }
+    } catch {
+      setError('Unexpected error loading statement');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -64,22 +67,41 @@ export default function StatementResponse() {
 
     setSubmitted(true);
     setProcessing(true);
+    setAiReply('');
+    setRating(null);
+    setError(null);
 
     try {
-      const res = await axios.post(`http://localhost:3000/langgraph/ask`, {
-        response,
+      const token = localStorage.getItem('token');
+      const payload = {
+        response: response,
         statementId: statement.id,
+      };
+
+      const aiRes = await fetch('http://localhost:3000/langgraph/ask', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+        body: JSON.stringify(payload),
       });
 
-      if (res.data?.bot_remarks) {
-        setAiReply(res.data.bot_remarks);
-        setRating(res.data.rating ?? null);
-      } else {
-        setAiReply('AI did not return a valid response.');
+      const aiData = await aiRes.json();
+
+      if (!aiRes.ok || !aiData.success) {
+        throw new Error(aiData.error || 'AI failed to respond properly.');
       }
+
+      const botRemarks = aiData?.bot_remarks || 'AI did not return a valid response.';
+      const aiRating = aiData?.rating ?? 0;
+
+      setAiReply(botRemarks);
+      setRating(aiRating);
     } catch (err: any) {
-      setAiReply('Error fetching AI response.');
-      console.error('AI error:', err);
+      console.error('Submit error:', err);
+      setError(err.message || 'Submission failed. Please try again.');
+      setAiReply('AI response was received, but a technical issue occurred.');
     } finally {
       setProcessing(false);
     }
@@ -91,7 +113,6 @@ export default function StatementResponse() {
 
   return (
     <div className="max-w-3xl mx-auto py-8">
-      {/* Back Button */}
       <div className="flex items-center gap-2 mb-4">
         <Link to={`/user/section/${id}`}>
           <Button variant="ghost" size="icon">
@@ -101,7 +122,6 @@ export default function StatementResponse() {
         <span className="text-lg font-semibold">Back to Section</span>
       </div>
 
-      {/* Statement Card */}
       <Card className="bg-blue-50 border-blue-200 mb-6">
         <div className="p-4 flex flex-col gap-4 sm:flex-row sm:items-center">
           <div className="flex-1">
@@ -133,7 +153,6 @@ export default function StatementResponse() {
         </div>
       </Card>
 
-      {/* Tips Card */}
       <Card className="bg-yellow-50 border-yellow-200 mb-6">
         <div className="p-4">
           <div className="flex items-center gap-2 mb-2">
@@ -148,17 +167,13 @@ export default function StatementResponse() {
         </div>
       </Card>
 
-      {/* Response Form */}
       <Card>
         <div className="p-6">
           <div className="font-bold text-xl mb-2">Your Response</div>
-          <div className="text-gray-600 mb-4 text-sm">
-            Share your thoughts, feelings, or experience with this exercise.
-          </div>
           <form onSubmit={handleSubmit}>
             <label className="block font-semibold mb-1">Your thoughts and reflections:</label>
             <textarea
-              className="w-full border rounded-lg p-3 mb-2 min-h-[100px] focus:outline-none focus:ring-2 focus:ring-blue-200"
+              className="w-full border rounded-lg p-3 mb-2 min-h-[100px]"
               placeholder="How did it make you feel? What was helpful or challenging?"
               minLength={10}
               value={response}
@@ -172,7 +187,7 @@ export default function StatementResponse() {
               <span className="text-xs text-gray-400">Your response is private and secure</span>
               <Button
                 type="submit"
-                className="bg-blue-500 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-600"
+                className="bg-blue-500 text-white"
                 disabled={response.length < 10 || processing}
               >
                 {processing ? 'Processing...' : 'Submit Response'}
@@ -180,7 +195,6 @@ export default function StatementResponse() {
             </div>
           </form>
 
-          {/* AI Response */}
           {submitted && aiReply && (
             <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg text-sm text-green-800 whitespace-pre-line">
               <strong>AI Response:</strong>

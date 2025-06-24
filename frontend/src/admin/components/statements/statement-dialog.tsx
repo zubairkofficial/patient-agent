@@ -12,8 +12,6 @@ import { Textarea } from '@/components/ui/textarea'
 import sectionService from '@/services/section.service'
 import emotionService from '@/services/emotions.service'
 import skillsService from '@/services/skills.service'
-import { ScrollArea } from '@/components/ui/scroll-area'
-import { Checkbox } from '@/components/ui/checkbox'
 import {
   Select,
   SelectContent,
@@ -21,6 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import SelectReact from 'react-select'
 
 interface Skill {
   id: number
@@ -65,18 +64,11 @@ export function StatementDialog({
   const [statement, setStatement] = useState('')
   const [skill, setSkill] = useState<number | null>(null)
   const [sectionId, setSectionId] = useState<number | null>(null)
-
   const [selectedEmotions, setSelectedEmotions] = useState<number[]>([])
   const [sections, setSections] = useState<Section[]>([])
   const [skills, setSkills] = useState<Skill[]>([])
   const [emotions, setEmotions] = useState<Emotion[]>([])
   const [loading, setLoading] = useState(false)
-
-  const toggleEmotion = (id: number) => {
-    setSelectedEmotions(prev =>
-      prev.includes(id) ? prev.filter(e => e !== id) : [...prev, id]
-    )
-  }
 
   useEffect(() => {
     if (open) fetchData()
@@ -106,6 +98,16 @@ export function StatementDialog({
     } finally {
       setLoading(false)
     }
+  }
+
+  const emotionOptions = emotions.map((e) => ({
+    value: e.id,
+    label: e.name,
+  }))
+
+  const handleEmotionChange = (selected: any) => {
+    const ids = selected.map((s: any) => s.value)
+    setSelectedEmotions(ids)
   }
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -193,26 +195,19 @@ export function StatementDialog({
             </Select>
           </div>
 
-          {/* Emotions Multi-select */}
+          {/* Emotions Multi-select (React Select) */}
           <div className="space-y-2">
             <label className="text-sm font-medium">Select Emotions</label>
-            <ScrollArea className="max-h-40 border rounded p-2">
-              {emotions.map((emotion) => (
-                <div key={emotion.id} className="flex items-center gap-2 py-1">
-                  <Checkbox
-                    id={`emotion-${emotion.id}`}
-                    checked={selectedEmotions.includes(emotion.id)}
-                    onCheckedChange={() => toggleEmotion(emotion.id)}
-                  />
-                  <label htmlFor={`emotion-${emotion.id}`} className="text-sm">
-                    {emotion.name}
-                  </label>
-                </div>
-              ))}
-              {!loading && emotions.length === 0 && (
-                <p className="text-sm text-muted">No emotions available</p>
-              )}
-            </ScrollArea>
+            <SelectReact
+              isMulti
+              isLoading={loading}
+              options={emotionOptions}
+              value={emotionOptions.filter((e) => selectedEmotions.includes(e.value))}
+              onChange={handleEmotionChange}
+              placeholder="Choose emotions"
+              className="text-sm"
+              classNamePrefix="react-select"
+            />
           </div>
 
           {/* Buttons */}

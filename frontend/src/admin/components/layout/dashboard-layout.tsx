@@ -14,6 +14,6 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           {children}
         </main>
       </div>
-    </div>
+    </div>  
   )
 }

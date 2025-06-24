@@ -1,15 +1,22 @@
-import { IsNotEmpty, IsInt } from 'class-validator';
+import { IsNotEmpty, IsInt, IsString, Min, Max } from 'class-validator';
 
 export class CreateResponseDto {
-  @IsNotEmpty()
-  response: string;
+  @IsString()
+  @IsNotEmpty({ message: 'Response text is required.' })
+  userResponse: string;
 
-  @IsInt()
+  @IsString()
+  @IsNotEmpty({ message: 'Bot remarks are required.' })
+  botRemarks: string;
+
+  @IsInt({ message: 'Rating must be an integer.' })
+  @Min(0, { message: 'Rating cannot be less than 0.' })
+  @Max(10, { message: 'Rating cannot be more than 10.' })
   rating: number;
 
-  @IsInt()
+  @IsInt({ message: 'statementId must be a valid integer.' })
   statementId: number;
 
-  @IsInt()
+  @IsInt({ message: 'doctorId must be a valid integer.' })
   doctorId: number;
 }

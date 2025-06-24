@@ -114,7 +114,6 @@ export default function SkillsPage() {
                 <TableHead>Title</TableHead>
                 <TableHead className="w-[500px]">Description</TableHead>
                 <TableHead>Created</TableHead>
-                <TableHead>Updated</TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -124,7 +123,6 @@ export default function SkillsPage() {
                   <TableCell className="font-medium">{skill.title}</TableCell>
                   <TableCell>{skill.description}</TableCell>
                   <TableCell>{new Date(skill.createdAt).toLocaleDateString()}</TableCell>
-                  <TableCell>{new Date(skill.updatedAt).toLocaleDateString()}</TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <SkillDialog

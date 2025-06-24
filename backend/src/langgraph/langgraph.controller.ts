@@ -1,17 +1,23 @@
 // ✅ langgraph.controller.ts (UPDATED)
-import { Controller, Get, Post, Query , Body } from '@nestjs/common';
+import { Controller, Get, Post, Query, Body, UseGuards, Req } from '@nestjs/common';
 import { LanggraphService } from './langgraph.service';
-import { Response } from './dto/response.dto';
+import { ResponseDto } from './dto/response.dto';
+import { Roles } from 'src/emotions/auth/roles.decorator';
+import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
+import { RolesGuard } from 'src/guards/role.guard';
 
 @Controller('langgraph')
 export class LanggraphController {
-  constructor(private readonly langgraphService: LanggraphService) {}
+  constructor(private readonly langgraphService: LanggraphService) { }
 
   @Post('ask')
-    runGraphAgent(@Body() dto: Response){
-      // Assuming dto has a property called 'prompt'
-      return this.langgraphService.runGraphAgent(dto);
-    }
+  @Roles('user')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+
+  runGraphAgent(@Body() dto: ResponseDto, @Req() req: any) {
+    // Assuming dto has a property called 'prompt'
+    return this.langgraphService.runGraphAgent(dto, req);
+  }
   // @Get('confirm')
   // async confirmExecution(
   //   @Query('prompt') prompt: string,

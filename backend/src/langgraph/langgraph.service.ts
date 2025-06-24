@@ -8,11 +8,12 @@ import {
   BaseMessage,
 } from '@langchain/core/messages';
 import { ConfigService } from '@nestjs/config';
-import { Response } from './dto/response.dto';
+import { ResponseDto } from './dto/response.dto';
 import { Statement } from 'src/model/statement.model';
 import { Section } from 'src/model/section.model';
 import { Skills } from 'src/model/skills.model';
 import { Emotions } from 'src/model/emotions.model';
+import { Response } from 'src/model/response.model';
 
 @Injectable()
 export class LanggraphService {
@@ -229,7 +230,7 @@ It depends on the Medical Areas/Skills given in the prompt, the more the doctor 
   /**
    * Main method to run medical consultation with structured response
    */
-  async runMedicalConsultation(dto: Response) {
+  async runMedicalConsultation(dto: ResponseDto, req: any) {
     try {
       this.logger.log(`Starting medical consultation for statement ID: ${dto.statementId}`);
 
@@ -289,6 +290,15 @@ It depends on the Medical Areas/Skills given in the prompt, the more the doctor 
 
       this.logger.log('Medical consultation completed successfully');
 
+
+      await Response.create({
+        response: dto.response,
+        botRemarks: structuredResponse.bot_remarks,
+        rating: structuredResponse.rating,
+        statementId: dto.statementId,
+        doctorId: req.user.id
+      })
+
       // Return structured response with bot_remarks and rating
       return {
         success: true,
@@ -326,8 +336,8 @@ It depends on the Medical Areas/Skills given in the prompt, the more the doctor 
   /**
    * Alternative method name for backward compatibility
    */
-  async runGraphAgent(dto: Response) {
-    return this.runMedicalConsultation(dto);
+  async runGraphAgent(dto: ResponseDto, req: any) {
+    return this.runMedicalConsultation(dto, req);
   }
 
   /**

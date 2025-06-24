@@ -10,16 +10,8 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import skillsService from '../../../services/skills.service'
-import { ScrollArea } from '@/components/ui/scroll-area'
-import { Checkbox } from '@/components/ui/checkbox'
+import Select from 'react-select'
 
 interface SectionDialogProps {
   mode: 'add' | 'edit'
@@ -66,10 +58,14 @@ export function SectionDialog({
     fetchSkills()
   }, [])
 
-  const toggleSkill = (id: string) => {
-    setSelectedSkills((prev) =>
-      prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]
-    )
+  const skillOptions = skills.map((s) => ({
+    value: s.id,
+    label: s.title,
+  }))
+
+  const handleSkillChange = (selected: any) => {
+    const ids = selected.map((s: any) => s.value)
+    setSelectedSkills(ids)
   }
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -100,6 +96,7 @@ export function SectionDialog({
               : 'Update the section information below.'}
           </DialogDescription>
         </DialogHeader>
+
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Title */}
           <div className="space-y-2">
@@ -115,27 +112,19 @@ export function SectionDialog({
             />
           </div>
 
-          {/* Multi-Select Skills */}
+          {/* Multi-select with react-select */}
           <div className="space-y-2">
             <label className="text-sm font-medium">Select Skills</label>
-            <ScrollArea className="max-h-40 border rounded p-2">
-              {skills.map((s) => (
-                <div key={s.id} className="flex items-center gap-2 py-1">
-                  <Checkbox
-                    id={`skill-${s.id}`}
-                    checked={selectedSkills.includes(s.id)}
-                    onCheckedChange={() => toggleSkill(s.id)}
-                  />
-                  <label htmlFor={`skill-${s.id}`} className="text-sm">
-                    {s.title}
-                  </label>
-                </div>
-              ))}
-              {loadingSkills && <p className="text-xs text-muted">Loading...</p>}
-              {!loadingSkills && skills.length === 0 && (
-                <p className="text-sm text-muted">No skills available</p>
-              )}
-            </ScrollArea>
+            <Select
+              isMulti
+              isLoading={loadingSkills}
+              options={skillOptions}
+              value={skillOptions.filter((s) => selectedSkills.includes(s.value))}
+              onChange={handleSkillChange}
+              placeholder="Choose skills"
+              className="text-sm"
+              classNamePrefix="react-select"
+            />
           </div>
 
           {/* Description */}

@@ -14,6 +14,24 @@ import {
 import authService from '@/services/auth.service'
 import { useNavigate, Link } from 'react-router-dom'
 
+// Helper to decode JWT token
+const parseJwt = (token: string) => {
+  try {
+    const base64Url = token.split('.')[1]
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split('')
+        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join('')
+    )
+    return JSON.parse(jsonPayload)
+  } catch (err) {
+    console.error('Token decode error:', err)
+    return null
+  }
+}
+
 export function LoginForm() {
   const [showPassword, setShowPassword] = useState(false)
   const [email, setEmail] = useState('')
@@ -34,20 +52,22 @@ export function LoginForm() {
       if (result.success) {
         const { token, user } = result.data
 
-        // Save data in localStorage
+        // Save to localStorage
         localStorage.setItem('token', token)
-        localStorage.setItem('userId', user.id)
-        localStorage.setItem('role', user.role)
-        localStorage.setItem('email', user.email)
-        localStorage.setItem('firstName', user.firstName)
-        localStorage.setItem('lastName', user.lastName)
         localStorage.setItem('user', JSON.stringify(user))
+        localStorage.setItem('userId', user.id)
+        localStorage.setItem('email', user.email)
 
-        // Role-based navigation
-        if (user.role === 'admin') {
-          navigate('/admin/dashboard')
-        } else {
+        // Decode token to get role
+        const decoded = parseJwt(token)
+        const role = decoded?.role || user.role || 'user'
+        localStorage.setItem('role', role)
+
+        // Navigate by role
+        if (role === 'admin') {
           navigate('/dashboard')
+        } else {
+          navigate('/user')
         }
       } else {
         setError(result.message || 'Invalid credentials')
@@ -64,7 +84,7 @@ export function LoginForm() {
     <Card className="w-full max-w-[400px] mx-auto">
       <CardHeader className="space-y-1">
         <div className="flex items-center justify-center mb-6">
-          <img src="/logo.svg" alt="Patient Agent" className="h-8 w-8" />
+          <img src="/pa.jpg" alt="Patient Agent" className="h-8 w-8" />
           <span className="ml-2 text-2xl font-bold">Patient Agent</span>
         </div>
         <CardTitle className="text-2xl text-center">Sign In</CardTitle>

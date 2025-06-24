@@ -33,7 +33,6 @@ export class Response extends Model {
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
-    unique: true,
   })
   declare rating: number;
 
@@ -41,19 +40,19 @@ export class Response extends Model {
     type: DataType.TEXT,
     allowNull: false,
   })
-  declare botremarks: string;
+  declare botRemarks: string;
 
-    @ForeignKey(() => Statement)
-    @Column({
-      type: DataType.INTEGER,
-      allowNull: false,
-    })
-    declare statementId : number;
+  @ForeignKey(() => Statement)
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+  })
+  declare statementId: number;
 
-      @ForeignKey(() => Doctor)
-      @Column({
-        type: DataType.INTEGER,
-        allowNull: false,
-      })
-      declare doctorId : number;
+  @ForeignKey(() => Doctor)
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+  })
+  declare doctorId: number;
 }

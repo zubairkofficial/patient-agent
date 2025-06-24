@@ -98,7 +98,6 @@ export default function EmotionsPage() {
                 <TableHead>Title</TableHead>
                 <TableHead className="w-[500px]">Detail</TableHead>
                 <TableHead>Created</TableHead>
-                <TableHead>Updated</TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -108,7 +107,6 @@ export default function EmotionsPage() {
                   <TableCell className="font-medium">{emotion.name}</TableCell>
                   <TableCell>{emotion.detail}</TableCell>
                   <TableCell>{new Date(emotion.createdAt).toLocaleDateString()}</TableCell>
-                  <TableCell>{new Date(emotion.updatedAt).toLocaleDateString()}</TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <EmotionDialog

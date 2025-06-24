@@ -3,16 +3,18 @@ import sectionService from "@/services/section.service";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Search, Brain } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
-const recentActivity = [
-  { title: "Anxiety Management", completed: 3, total: 12, date: "Today" },
-  { title: "Mindfulness Practice", completed: 8, total: 8, date: "Yesterday" },
-  { title: "Sleep Hygiene", completed: 5, total: 10, date: "2 days ago" },
-];
+// const recentActivity = [
+//   { title: "Anxiety Management", completed: 3, total: 12, date: "Today" },
+//   { title: "Mindfulness Practice", completed: 8, total: 8, date: "Yesterday" },
+//   { title: "Sleep Hygiene", completed: 5, total: 10, date: "2 days ago" },
+// ];
 
 export default function Home() {
   const [sections, setSections] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchSections = async () => {
@@ -38,6 +40,7 @@ export default function Home() {
             Continue your path to better mental health with personalized therapeutic exercises
           </div>
         </div>
+        {/* Stats */}
         <div className="flex gap-4">
           <div className="bg-blue-50 rounded-xl p-4 flex flex-col items-center">
             <div className="text-xs text-blue-600 font-semibold">Total Progress</div>
@@ -70,10 +73,10 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Wellness Sections */}
+      {/* Sections */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {sections.map((section) => (
-          <Card key={section.id || section.title} className="border-t-4 border-blue-500">
+          <Card key={section.id} className="border-t-4 border-blue-500">
             <CardHeader className="flex flex-row items-center gap-3 pb-2">
               <Brain className="text-blue-500" size={28} />
               <div>
@@ -92,7 +95,6 @@ export default function Home() {
             </CardHeader>
             <CardContent>
               <div className="text-gray-600 mb-2">{section.description || section.desc}</div>
-
               <div className="flex items-center gap-4 text-xs text-gray-500">
                 <span>{section.exercises || 0} exercises</span>
                 <span>•</span>
@@ -100,7 +102,10 @@ export default function Home() {
                 <span>•</span>
                 <span>{section.level || "Beginner"}</span>
               </div>
-              <button className="mt-4 w-full bg-black text-white py-2 rounded-lg font-semibold hover:bg-gray-900 transition">
+              <button
+                onClick={() => navigate(`/user/section/${section.id}`)}
+                className="mt-4 w-full bg-black text-white py-2 rounded-lg font-semibold hover:bg-gray-900 transition"
+              >
                 Start Session
               </button>
             </CardContent>
@@ -108,7 +113,7 @@ export default function Home() {
         ))}
       </div>
 
-      {/* Recent Activity */}
+      {/* Activity
       <div className="mt-8">
         <div className="text-xl font-bold mb-4">Recent Activity</div>
         <div className="space-y-3">
@@ -133,7 +138,7 @@ export default function Home() {
             </div>
           ))}
         </div>
-      </div>
+      </div> */}
     </div>
   );
 }

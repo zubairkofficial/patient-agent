@@ -1,5 +1,6 @@
+// src/services/response.service.ts
 import axios from 'axios';
-import { API_BASE_URL } from '../utils/constants.ts'
+import { API_BASE_URL } from '../utils/constants';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -8,9 +9,8 @@ const api = axios.create({
   },
 });
 
-// Optional: include token if your backend is protected
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('authToken');
+  const token = localStorage.getItem('token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -18,16 +18,21 @@ api.interceptors.request.use((config) => {
 });
 
 class ResponseService {
-  // ✅ Create a response
-  async createResponse(data : any) {
+  async createResponse(data: {
+    statementId: number;
+    userResponse: string;
+    botRemarks: string;
+    rating: number;
+    doctorId?: number;
+  }) {
     try {
-      const res = await api.post('/response', data);
+      const res = await api.post('/responses/create', data);
       return {
         success: true,
         data: res.data,
         message: 'Response created successfully',
       };
-    } catch (err : any) {
+    } catch (err: any) {
       return {
         success: false,
         message: err.response?.data?.message || 'Failed to create response',
@@ -36,16 +41,15 @@ class ResponseService {
     }
   }
 
-  // ✅ Get responses by doctor ID
-  async getResponsesByDoctorId(doctorId : number) {
+  async getResponsesByDoctorId(doctorId: number) {
     try {
-      const res = await api.get(`/response/by-doctor/${doctorId}`);
+      const res = await api.get(`/responses/doctor/${doctorId}`);
       return {
         success: true,
         data: res.data,
         message: 'Responses fetched successfully',
       };
-    } catch (err : any) {
+    } catch (err: any) {
       return {
         success: false,
         message: err.response?.data?.message || 'Failed to fetch responses',
@@ -55,6 +59,5 @@ class ResponseService {
   }
 }
 
-// Export as singleton
 const responseService = new ResponseService();
 export default responseService;

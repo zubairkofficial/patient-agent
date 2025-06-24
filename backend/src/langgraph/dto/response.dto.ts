@@ -1,6 +1,6 @@
 import { IsOptional, IsNotEmpty, IsNumber, IsArray } from 'class-validator';
 
-export class Response {
+export class ResponseDto {
   @IsNotEmpty()
   statementId: number;
 

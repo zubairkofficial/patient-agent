@@ -1,17 +1,32 @@
-import { Link, Outlet, useLocation } from 'react-router-dom';
+import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Home, User, Settings, LogOut, Menu } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from "@/lib/utils";
 
 const navItems = [
   { label: 'Home', icon: Home, to: '/user/home' },
-  { label: 'Profile', icon: User, to: '/user/profile' },
-  { label: 'Settings', icon: Settings, to: '/user/settings' },
+  // { label: 'Profile', icon: User, to: '/user/profile' },
+  {
+    label: 'Sign Out',
+    icon: LogOut,
+    to: '/',
+    action: 'logout',
+  },
 ];
 
 export default function UserLayout() {
   const location = useLocation();
+  const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const handleNavClick = (item: any) => {
+    setSidebarOpen(false);
+    navigate(item.to);
+    if (item.action === 'logout') {
+      localStorage.clear();
+      navigate(item.to);
+    }
+  };
 
   return (
     <div className="flex min-h-screen bg-gray-50">
@@ -37,29 +52,25 @@ export default function UserLayout() {
               <div className="text-xs text-gray-500">Your Wellness Companion</div>
             </div>
           </div>
+
           <nav className="mt-6 flex flex-col gap-1 px-2">
-            {navItems.map(({ label, icon: Icon, to }) => (
-              <Link
+            {navItems.map(({ label, icon: Icon, to, action }) => (
+              <button
                 key={label}
-                to={to}
                 className={cn(
-                  "flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 hover:bg-blue-50 transition",
-                  location.pathname === to && "bg-blue-100 text-blue-700 font-semibold"
+                  "flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 hover:bg-blue-50 transition text-left",
+                  location.pathname === to && action !== 'logout' && "bg-blue-100 text-blue-700 font-semibold"
                 )}
-                onClick={() => setSidebarOpen(false)}
+                onClick={() => handleNavClick({ to, action })}
               >
                 <Icon size={20} />
                 {label}
-              </Link>
+              </button>
             ))}
           </nav>
         </div>
-        <div className="px-2 pb-4">
-          <button className="flex items-center gap-2 px-4 py-2 w-full rounded-lg text-gray-500 hover:bg-gray-100 transition">
-            <LogOut size={18} /> Sign Out
-          </button>
-        </div>
       </aside>
+
       <button
         className="fixed top-4 left-4 z-50 md:hidden bg-white border rounded-full p-2 shadow"
         onClick={() => setSidebarOpen((v) => !v)}
@@ -67,6 +78,7 @@ export default function UserLayout() {
       >
         <Menu size={24} />
       </button>
+
       <main className="flex-1 p-4 md:p-6 w-screen transition-all">
         <Outlet />
       </main>

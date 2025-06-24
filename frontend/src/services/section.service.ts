@@ -18,6 +18,7 @@ api.interceptors.request.use((config) => {
 });
 
 class SectionService {
+  getSectionById: any;
   // ✅ Create a section (admin only)
   async createSection(sectionData: any) {
     try {
