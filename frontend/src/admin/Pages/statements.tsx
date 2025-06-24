@@ -55,6 +55,9 @@ export default function StatementsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<number | null>(null);
+  const [editLoading, setEditLoading] = useState(false);
+  const [editData, setEditData] = useState<any>(null);
+  const [editOpenId, setEditOpenId] = useState<number | null>(null);
 
   useEffect(() => {
     fetchStatements();
@@ -92,10 +95,30 @@ export default function StatementsPage() {
     }
   };
 
+  const handleEditOpen = async (id: number) => {
+    setEditLoading(true);
+    setEditOpenId(id);
+    const response = await statementService.getStatementById(id);
+    if (response.success) {
+      setEditData(response.data);
+    } else {
+      setEditData(null);
+      console.error(response.message);
+    }
+    setEditLoading(false);
+  };
+
+  const handleEditClose = () => {
+    setEditOpenId(null);
+    setEditData(null);
+    setEditLoading(false);
+  };
+
   const handleUpdate = async (id: number, data: any) => {
     const response = await statementService.updateStatement(id, data);
     if (response.success) {
       fetchStatements();
+      handleEditClose();
     }
   };
 
@@ -209,19 +232,40 @@ export default function StatementsPage() {
                     <div className="flex items-center gap-2">
                       <StatementDialog
                         mode="edit"
-                        defaultValues={{
-                          statement: s.statement,
-                          emotionIds: s.emotion?.map((e) => e.id) || [],
-                          emotionId: [],
-                          skill: typeof s.skill === "number" ? s.skill : 0,
-                          sectionId: Number(s.sectionId),
-                        }}
+                        defaultValues={
+                          editOpenId === s.id && editData
+                            ? {
+                                statement: editData.statement,
+                                emotionIds: Array.isArray(editData.emotion)
+                                  ? editData.emotion.map((e: any) => e.id)
+                                  : [],
+                                sectionId: editData.section?.id || Number(editData.sectionId),
+                                skill: 0, // Remove skill dropdown, but keep prop for type
+                                emotionId: [], // Remove emotionId dropdown, but keep prop for type
+                              }
+                            : {
+                                statement: s.statement,
+                                emotionIds: s.emotion?.map((e) => e.id) || [],
+                                sectionId: Number(s.sectionId),
+                                skill: 0,
+                                emotionId: [],
+                              }
+                        }
                         onSubmit={(data) => handleUpdate(s.id, data)}
+                        open={editOpenId === s.id}
+                        onOpenChange={(open) => {
+                          if (!open) handleEditClose();
+                        }}
+                        loading={editLoading}
                         trigger={
                           <Button
                             variant="ghost"
                             size="icon"
                             className="h-8 w-8"
+                            onClick={async (e) => {
+                              e.preventDefault();
+                              await handleEditOpen(s.id);
+                            }}
                           >
                             <PencilIcon className="h-4 w-4" />
                           </Button>

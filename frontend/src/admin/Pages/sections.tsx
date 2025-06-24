@@ -35,6 +35,9 @@ export default function SectionsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [deleteId, setDeleteId] = useState<number | null>(null)
+  const [editData, setEditData] = useState<any>(null);
+  const [editOpenId, setEditOpenId] = useState<number | null>(null);
+  const [editLoading, setEditLoading] = useState(false);
 
   useEffect(() => {
     fetchSections();
@@ -88,6 +91,25 @@ export default function SectionsPage() {
     setDeleteDialogOpen(false)
     setDeleteId(null)
   }
+
+  const handleEditOpen = async (id: number) => {
+    setEditLoading(true);
+    setEditOpenId(id);
+    const response = await sectionService.getSectionById(id);
+    if (response.success) {
+      setEditData(response.data);
+    } else {
+      setEditData(null);
+      console.error(response.message);
+    }
+    setEditLoading(false);
+  };
+
+  const handleEditClose = () => {
+    setEditOpenId(null);
+    setEditData(null);
+    setEditLoading(false);
+  };
 
   const filteredSections = sections.filter((section) => {
     const skills = section.skillList.map((s) => s.title).join(' ').toLowerCase();
@@ -164,14 +186,32 @@ export default function SectionsPage() {
                     <div className="flex items-center gap-2">
                       <SectionDialog
                         mode="edit"
-                        defaultValues={{
-                          title: section.title,
-                          skills: section.skillList.map((skill) => String(skill.id)),
-                          description: section.description,
-                        }}
+                        defaultValues={
+                          editOpenId === section.id && editData
+                            ? {
+                                title: editData.title,
+                                skills: editData.skillList?.map((skill: any) => String(skill.id)) || [],
+                                description: editData.description,
+                              }
+                            : {
+                                title: section.title,
+                                skills: section.skillList.map((skill) => String(skill.id)),
+                                description: section.description,
+                              }
+                        }
                         onSubmit={(data) => handleUpdate(section.id, data)}
+                        open={editOpenId === section.id}
+                        onOpenChange={(open) => {
+                          if (!open) handleEditClose();
+                        }}
+                        loading={editLoading}
                         trigger={
-                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                          <Button variant="ghost" size="icon" className="h-8 w-8"
+                            onClick={async (e) => {
+                              e.preventDefault();
+                              await handleEditOpen(section.id);
+                            }}
+                          >
                             <PencilIcon className="h-4 w-4" />
                           </Button>
                         }

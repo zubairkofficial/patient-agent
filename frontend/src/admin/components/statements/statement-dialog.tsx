@@ -59,7 +59,14 @@ export function StatementDialog({
   defaultValues,
   onSubmit,
   trigger,
-}: StatementDialogProps) {
+  open: controlledOpen,
+  onOpenChange,
+  loading: controlledLoading,
+}: StatementDialogProps & {
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  loading?: boolean;
+}) {
   const [open, setOpen] = useState(false)
   const [statement, setStatement] = useState('')
   const [skill, setSkill] = useState<number | null>(null)
@@ -70,9 +77,13 @@ export function StatementDialog({
   const [emotions, setEmotions] = useState<Emotion[]>([])
   const [loading, setLoading] = useState(false)
 
+  // Use controlled open/loading if provided
+  const isOpen = controlledOpen !== undefined ? controlledOpen : open;
+  const isLoading = controlledLoading !== undefined ? controlledLoading : loading;
+
   useEffect(() => {
-    if (open) fetchData()
-  }, [open])
+    if (isOpen) fetchData()
+  }, [isOpen])
 
   const fetchData = async () => {
     setLoading(true)
@@ -126,7 +137,7 @@ export function StatementDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={isOpen} onOpenChange={onOpenChange ? onOpenChange : setOpen}>
       <DialogTrigger asChild>
         {trigger || (
           <Button className="bg-orange-600 hover:bg-orange-700">
@@ -143,7 +154,9 @@ export function StatementDialog({
               : 'Edit this therapeutic statement.'}
           </DialogDescription>
         </DialogHeader>
-
+        {isLoading ? (
+          <div className="py-8 text-center">Loading...</div>
+        ) : (
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Statement */}
           <div className="space-y-2">
@@ -154,7 +167,6 @@ export function StatementDialog({
               required
             />
           </div>
-
           {/* Section Select */}
           <div className="space-y-2">
             <label className="text-sm font-medium">Section</label>
@@ -163,7 +175,7 @@ export function StatementDialog({
               onValueChange={(val) => setSectionId(Number(val))}
             >
               <SelectTrigger>
-                <SelectValue placeholder={loading ? 'Loading...' : 'Select section'} />
+                <SelectValue placeholder={isLoading ? 'Loading...' : 'Select section'} />
               </SelectTrigger>
               <SelectContent>
                 {sections.map((section) => (
@@ -174,33 +186,14 @@ export function StatementDialog({
               </SelectContent>
             </Select>
           </div>
-
-          {/* Skill Select */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Skill</label>
-            <Select
-              value={skill?.toString() || ''}
-              onValueChange={(val) => setSkill(Number(val))}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select skill" />
-              </SelectTrigger>
-              <SelectContent>
-                {skills.map((sk) => (
-                  <SelectItem key={sk.id} value={sk.id.toString()}>
-                    {sk.title}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
+          {/* Skill Select (hidden, just for type compatibility) */}
+          <input type="hidden" value={skill ?? 0} readOnly />
           {/* Emotions Multi-select (React Select) */}
           <div className="space-y-2">
             <label className="text-sm font-medium">Select Emotions</label>
             <SelectReact
               isMulti
-              isLoading={loading}
+              isLoading={isLoading}
               options={emotionOptions}
               value={emotionOptions.filter((e) => selectedEmotions.includes(e.value))}
               onChange={handleEmotionChange}
@@ -209,10 +202,9 @@ export function StatementDialog({
               classNamePrefix="react-select"
             />
           </div>
-
           {/* Buttons */}
           <div className="flex justify-end gap-2">
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+            <Button type="button" variant="outline" onClick={() => (onOpenChange ? onOpenChange(false) : setOpen(false))}>
               Cancel
             </Button>
             <Button type="submit" className="bg-orange-600 hover:bg-orange-700">
@@ -220,6 +212,7 @@ export function StatementDialog({
             </Button>
           </div>
         </form>
+        )}
       </DialogContent>
     </Dialog>
   )

@@ -30,6 +30,13 @@ export class StatementController {
     return this.statementService.create(dto);
   }
 
+  @Get('get/:id')
+  @Roles(Role.USER, Role.ADMIN)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  findById(@Param('id', ParseIntPipe) id: number) {
+    return this.statementService.findById(id);
+  }
+
   @Get('get')
   @Roles(Role.ADMIN)
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -37,12 +44,7 @@ export class StatementController {
     return this.statementService.findAll();
   }
 
-  @Get('get/:id')
-  @Roles(Role.USER, Role.ADMIN)
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  findById(@Param('id', ParseIntPipe) id: number) {
-    return this.statementService.findById(id);
-  }
+
 
   @Get('section/:sectionId')
   @Roles(Role.ADMIN, Role.USER)
