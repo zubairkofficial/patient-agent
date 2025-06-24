@@ -17,6 +17,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 
 import statementService from "@/services/statement.service";
 import skillsService from "@/services/skills.service";
@@ -52,6 +53,8 @@ export default function StatementsPage() {
   const [skills, setSkills] = useState<Skill[]>([]);
   const [sections, setSections] = useState<Section[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleteId, setDeleteId] = useState<number | null>(null);
 
   useEffect(() => {
     fetchStatements();
@@ -97,11 +100,23 @@ export default function StatementsPage() {
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm("Are you sure you want to delete this statement?")) return;
-    const response = await statementService.deleteStatement(id);
+    setDeleteId(id);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (deleteId === null) return;
+    const response = await statementService.deleteStatement(deleteId);
     if (response.success) {
       fetchStatements();
     }
+    setDeleteDialogOpen(false);
+    setDeleteId(null);
+  };
+
+  const cancelDelete = () => {
+    setDeleteDialogOpen(false);
+    setDeleteId(null);
   };
 
   const getSectionTitle = (id: string) => {
@@ -228,6 +243,20 @@ export default function StatementsPage() {
           </Table>
         </div>
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Statement</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">Are you sure you want to delete this statement?</div>
+          <DialogFooter className="flex justify-end gap-2">
+            <Button variant="outline" onClick={cancelDelete}>Cancel</Button>
+            <Button variant="destructive" onClick={confirmDelete}>Delete</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 }

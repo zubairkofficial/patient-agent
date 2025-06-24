@@ -40,7 +40,6 @@ export interface EmotionDto {
 }
 
 class EmotionService {
-  deleteEmotion: any;
   getRole() {
     return getUserRole();
   }
@@ -108,6 +107,22 @@ class EmotionService {
       return {
         success: false,
         message: error.response?.data?.message || 'Failed to update emotion',
+        error: error.response?.data,
+      };
+    }
+  }
+  async deleteEmotion(id: number) {
+    try {
+      const res = await api.delete(`/emotions/delete/${id}`);
+      return {
+        success: true,
+        data: res.data,
+        message: 'Emotion deleted successfully',
+      };
+    } catch (error: any) {
+      return {
+        success: false,
+        message: error.response?.data?.message || 'Failed to delete emotion',
         error: error.response?.data,
       };
     }

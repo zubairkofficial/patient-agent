@@ -13,6 +13,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import sectionService from '@/services/section.service';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 
 interface Skill {
   id: number;
@@ -32,6 +33,8 @@ interface Section {
 export default function SectionsPage() {
   const [sections, setSections] = useState<Section[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [deleteId, setDeleteId] = useState<number | null>(null)
 
   useEffect(() => {
     fetchSections();
@@ -64,14 +67,27 @@ export default function SectionsPage() {
     }
   };
 
-  const handleDelete = async (id: number) => {
-    const response = await sectionService.deleteSection(id);
+  const handleDelete = (id: number) => {
+    setDeleteId(id)
+    setDeleteDialogOpen(true)
+  }
+
+  const confirmDelete = async () => {
+    if (deleteId === null) return
+    const response = await sectionService.deleteSection(deleteId)
     if (response.success) {
-      fetchSections();
+      fetchSections()
     } else {
-      console.error(response.message);
+      console.error(response.message)
     }
-  };
+    setDeleteDialogOpen(false)
+    setDeleteId(null)
+  }
+
+  const cancelDelete = () => {
+    setDeleteDialogOpen(false)
+    setDeleteId(null)
+  }
 
   const filteredSections = sections.filter((section) => {
     const skills = section.skillList.map((s) => s.title).join(' ').toLowerCase();
@@ -176,6 +192,20 @@ export default function SectionsPage() {
           </Table>
         </div>
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Section</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">Are you sure you want to delete this section?</div>
+          <DialogFooter className="flex justify-end gap-2">
+            <Button variant="outline" onClick={cancelDelete}>Cancel</Button>
+            <Button variant="destructive" onClick={confirmDelete}>Delete</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 }

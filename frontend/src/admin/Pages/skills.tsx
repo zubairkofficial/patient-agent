@@ -12,6 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import skillsService from '../../services/skills.service' // ✅ Import service
 
 interface Skill {
@@ -27,6 +28,8 @@ interface Skill {
 export default function SkillsPage() {
   const [skills, setSkills] = useState<Skill[]>([])
   const [searchQuery, setSearchQuery] = useState('')
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [deleteId, setDeleteId] = useState<number | null>(null)
 
   // ✅ Load skills initially
   useEffect(() => {
@@ -61,13 +64,26 @@ export default function SkillsPage() {
     }
   }
 
-  const handleDelete = async (id: number) => {
-    const response = await skillsService.deleteSkill(id)
+  const handleDelete = (id: number) => {
+    setDeleteId(id)
+    setDeleteDialogOpen(true)
+  }
+
+  const confirmDelete = async () => {
+    if (deleteId === null) return
+    const response = await skillsService.deleteSkill(deleteId)
     if (response.success) {
       fetchSkills()
     } else {
       console.error(response.message)
     }
+    setDeleteDialogOpen(false)
+    setDeleteId(null)
+  }
+
+  const cancelDelete = () => {
+    setDeleteDialogOpen(false)
+    setDeleteId(null)
   }
 
   const filteredSkills = skills.filter(
@@ -158,6 +174,20 @@ export default function SkillsPage() {
           </Table>
         </div>
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Skill</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">Are you sure you want to delete this skill?</div>
+          <DialogFooter className="flex justify-end gap-2">
+            <Button variant="outline" onClick={cancelDelete}>Cancel</Button>
+            <Button variant="destructive" onClick={confirmDelete}>Delete</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   )
 }
