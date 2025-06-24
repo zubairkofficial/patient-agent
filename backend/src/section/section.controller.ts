@@ -1,4 +1,15 @@
-import { Body, UseGuards, Controller, Delete, Get, Param, Post, Put, Query, Req } from '@nestjs/common';
+import {
+  Body,
+  UseGuards,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put,
+  Query,
+  Req,
+} from '@nestjs/common';
 import { SectionService } from './section.service';
 import { Roles } from 'src/emotions/auth/roles.decorator';
 import { Role } from 'src/utils/roles.enum';
@@ -7,8 +18,7 @@ import { RolesGuard } from 'src/guards/role.guard';
 
 @Controller('section')
 export class SectionController {
-  constructor(private readonly sectionService: SectionService) { }
-
+  constructor(private readonly sectionService: SectionService) {}
 
   @Post('/')
   @Roles(Role.ADMIN)
@@ -17,20 +27,26 @@ export class SectionController {
     return this.sectionService.create(body);
   }
 
-  @Get(':id/skills')
-  @Roles(Role.ADMIN , Role.USER)
+  @Get(':id/section')
+  @Roles(Role.ADMIN, Role.USER)
   @UseGuards(JwtAuthGuard, RolesGuard)
-getSkillsBySection(@Param('id') id: number) {
-  return this.sectionService.getSkillsBySection(id);
-}
+  async findSectionById(@Param('id') id: number) {
+    return this.sectionService.findSectionById(Number(id));
+  }
+
+  // @Get(':id/skills')
+  // @Roles(Role.ADMIN, Role.USER)
+  // @UseGuards(JwtAuthGuard, RolesGuard)
+  // getSkillsBySection(@Param('id') id: number) {
+  //   return this.sectionService.getSkillsBySection(id);
+  // }
 
   @Get('/')
-  @Roles(Role.ADMIN , Role.USER)
+  @Roles(Role.ADMIN, Role.USER)
   @UseGuards(JwtAuthGuard, RolesGuard)
   async findAll() {
     return this.sectionService.findAll();
   }
-
 
   @Put(':id')
   @Roles(Role.ADMIN)
@@ -38,7 +54,6 @@ getSkillsBySection(@Param('id') id: number) {
   async update(@Param('id') id: string, @Body() body: any, @Req() req: any) {
     return this.sectionService.update(+id, body);
   }
-
 
   @Delete(':id')
   @Roles(Role.ADMIN)
