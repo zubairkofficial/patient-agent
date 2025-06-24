@@ -14,6 +14,9 @@ import { Section } from 'src/model/section.model';
 import { Skills } from 'src/model/skills.model';
 import { Emotions } from 'src/model/emotions.model';
 import { Response } from 'src/model/response.model';
+import { User } from 'src/model/user.model';
+import { Doctor } from 'src/model/doctorprofile.model';
+import { Op } from 'sequelize';
 
 @Injectable()
 export class LanggraphService {
@@ -44,18 +47,18 @@ export class LanggraphService {
   // Patient Statement: "${patient_statement || 'No statement provided'}"
 
   // **PATIENT'S EMOTIONAL STATE:**
-  // ${emotion_of_patient && emotion_of_patient?.length > 0 ? 
-  //     emotion_of_patient.map(emotion => 
+  // ${emotion_of_patient && emotion_of_patient?.length > 0 ?
+  //     emotion_of_patient.map(emotion =>
   //         `- ${emotion.emotion_name}: ${emotion.emotion_detail}`
-  //     ).join('\n') 
+  //     ).join('\n')
   //     : "No specific emotional indicators provided"
   // }
 
   // **RELEVANT MEDICAL SKILLS/AREAS TO CONSIDER:**
-  // ${skills_to_evaluate && skills_to_evaluate.length > 0 ? 
-  //     skills_to_evaluate.map(skill => 
+  // ${skills_to_evaluate && skills_to_evaluate.length > 0 ?
+  //     skills_to_evaluate.map(skill =>
   //         `- ${skill.title}: ${skill.description}`
-  //     ).join('\n') 
+  //     ).join('\n')
   //     : "General medical consultation"
   // }
 
@@ -109,7 +112,7 @@ export class LanggraphService {
     patient_statement: string,
     emotion_of_patient: any[],
     skills_to_evaluate: any[],
-    doctor_response?: string
+    doctor_response?: string,
   ): string {
     return `As a medical AI assistant, evaluate the following patient case and provide a structured response:
 
@@ -117,20 +120,24 @@ export class LanggraphService {
 Patient Statement: "${patient_statement}"
 
 **PATIENT EMOTIONS:**
-${emotion_of_patient && emotion_of_patient?.length > 0 ?
-        emotion_of_patient.map(emotion =>
-          `- ${emotion.emotion_name}: ${emotion.emotion_detail}`
-        ).join('\n')
-        : "No emotional indicators"
-      }
+${
+  emotion_of_patient && emotion_of_patient?.length > 0
+    ? emotion_of_patient
+        .map(
+          (emotion) => `- ${emotion.emotion_name}: ${emotion.emotion_detail}`,
+        )
+        .join('\n')
+    : 'No emotional indicators'
+}
 
 **MEDICAL AREAS/Skills TO EVALUATE:**
-${skills_to_evaluate && skills_to_evaluate.length > 0 ?
-        skills_to_evaluate.map(skill =>
-          `- ${skill.title}: ${skill.description}`
-        ).join('\n')
-        : "General evaluation"
-      }
+${
+  skills_to_evaluate && skills_to_evaluate.length > 0
+    ? skills_to_evaluate
+        .map((skill) => `- ${skill.title}: ${skill.description}`)
+        .join('\n')
+    : 'General evaluation'
+}
 
 **CONTEXT:**
 Doctor Response: ${doctor_response}
@@ -158,7 +165,10 @@ It depends on the Medical Areas/Skills given in the prompt, the more the doctor 
   /**
    * Parse AI response to extract JSON
    */
-  private parseStructuredResponse(response: string): { bot_remarks: string; rating: number } {
+  private parseStructuredResponse(response: string): {
+    bot_remarks: string;
+    rating: number;
+  } {
     try {
       // Try to extract JSON from response
       const jsonMatch = response.match(/\{[\s\S]*\}/);
@@ -166,26 +176,32 @@ It depends on the Medical Areas/Skills given in the prompt, the more the doctor 
         const parsed = JSON.parse(jsonMatch[0]);
 
         // Validate structure
-        if (typeof parsed.bot_remarks === 'string' &&
+        if (
+          typeof parsed.bot_remarks === 'string' &&
           typeof parsed.rating === 'number' &&
-          parsed.rating >= 0 && parsed.rating <= 10) {
+          parsed.rating >= 0 &&
+          parsed.rating <= 10
+        ) {
           return {
             bot_remarks: parsed.bot_remarks,
-            rating: Math.round(parsed.rating) // Ensure integer
+            rating: Math.round(parsed.rating), // Ensure integer
           };
         }
       }
 
       // Fallback if parsing fails
       return {
-        bot_remarks: response.replace(/[{}]/g, '').trim() || "I apologize, but I'm unable to provide a proper consultation at this time. Please consult with a healthcare professional directly.",
-        rating: 5 // Default moderate rating
+        bot_remarks:
+          response.replace(/[{}]/g, '').trim() ||
+          "I apologize, but I'm unable to provide a proper consultation at this time. Please consult with a healthcare professional directly.",
+        rating: 5, // Default moderate rating
       };
     } catch (error) {
       this.logger.error('Error parsing structured response:', error);
       return {
-        bot_remarks: "I apologize, but I encountered an issue processing your request. Please consult with a healthcare professional for proper medical guidance.",
-        rating: 5
+        bot_remarks:
+          'I apologize, but I encountered an issue processing your request. Please consult with a healthcare professional for proper medical guidance.',
+        rating: 5,
       };
     }
   }
@@ -195,18 +211,20 @@ It depends on the Medical Areas/Skills given in the prompt, the more the doctor 
    */
   private extractPatientData(statement: any) {
     try {
-      const patient_statement = statement?.statement || "";
-      const doctor_response = statement?.doctor_response || "";
+      const patient_statement = statement?.statement || '';
+      const doctor_response = statement?.doctor_response || '';
 
-      const skills_to_evaluate = statement?.section?.skills?.map((skill: Skills) => ({
-        title: skill.title || 'Unknown Skill',
-        description: skill.description || 'No description available'
-      })) || [];
+      const skills_to_evaluate =
+        statement?.section?.skills?.map((skill: Skills) => ({
+          title: skill.title || 'Unknown Skill',
+          description: skill.description || 'No description available',
+        })) || [];
 
-      const emotion_of_patient = statement?.emotion?.map((emotion: Emotions) => ({
-        emotion_name: emotion.name || 'Unknown Emotion',
-        emotion_detail: emotion.detail || 'No details available'
-      })) || [];
+      const emotion_of_patient =
+        statement?.emotion?.map((emotion: Emotions) => ({
+          emotion_name: emotion.name || 'Unknown Emotion',
+          emotion_detail: emotion.detail || 'No details available',
+        })) || [];
 
       return {
         patient_statement,
@@ -217,12 +235,12 @@ It depends on the Medical Areas/Skills given in the prompt, the more the doctor 
     } catch (error) {
       this.logger.error('Error extracting patient data:', error);
       return {
-        patient_statement: "",
-        doctor_response: "",
+        patient_statement: '',
+        doctor_response: '',
         skills_to_evaluate: [],
         emotion_of_patient: [],
         isValid: false,
-        error: error.message
+        error: error.message,
       };
     }
   }
@@ -232,19 +250,28 @@ It depends on the Medical Areas/Skills given in the prompt, the more the doctor 
    */
   async runMedicalConsultation(dto: ResponseDto, req: any) {
     try {
-      this.logger.log(`Starting medical consultation for statement ID: ${dto.statementId}`);
+      const user = await Doctor.findOne({
+        where: {
+          userId: {
+            [Op.eq]: req.user.id,
+          },
+        },
+      });
+      this.logger.log(
+        `Starting medical consultation for statement ID: ${dto.statementId}, user: ${user?.id}`,
+      );
 
       // Fetch patient data from database
       const statement = await Statement.findByPk(dto.statementId, {
         include: [
           {
             model: Section,
-            include: [{ model: Skills }]
+            include: [{ model: Skills }],
           },
           {
-            model: Emotions
-          }
-        ]
+            model: Emotions,
+          },
+        ],
       });
 
       if (!statement) {
@@ -254,24 +281,23 @@ It depends on the Medical Areas/Skills given in the prompt, the more the doctor 
       // Extract and validate patient data
       const patientData = this.extractPatientData(statement);
 
-
-
       // Generate structured consultation prompt
       const medicalPrompt = this.generateEvaluationPrompt(
         patientData.patient_statement,
         patientData.emotion_of_patient,
         patientData.skills_to_evaluate,
-        dto.response
+        dto.response,
       );
 
       // Create system message for structured medical response
       const systemMessage = new SystemMessage({
-        content: "You are a medical AI that provides structured consultations in JSON format. Always respond with valid JSON containing bot_remarks (string) and rating (number 0-10). Be professional, empathetic, and medically sound."
+        content:
+          'You are a medical AI that provides structured consultations in JSON format. Always respond with valid JSON containing bot_remarks (string) and rating (number 0-10). Be professional, empathetic, and medically sound.',
       });
 
       // Create human message with the consultation request
       const humanMessage = new HumanMessage({
-        content: medicalPrompt
+        content: medicalPrompt,
       });
 
       const messages: BaseMessage[] = [systemMessage, humanMessage];
@@ -281,25 +307,23 @@ It depends on the Medical Areas/Skills given in the prompt, the more the doctor 
       const aiResponse = await this.model.invoke(messages);
 
       // Extract and parse the response content
-      const rawResponse = typeof aiResponse.content === 'string'
-        ? aiResponse.content
-        : aiResponse.content.toString();
+      const rawResponse =
+        typeof aiResponse.content === 'string'
+          ? aiResponse.content
+          : aiResponse.content.toString();
 
-      // Parse structured response
       const structuredResponse = this.parseStructuredResponse(rawResponse);
 
       this.logger.log('Medical consultation completed successfully');
-
 
       await Response.create({
         response: dto.response,
         botRemarks: structuredResponse.bot_remarks,
         rating: structuredResponse.rating,
         statementId: dto.statementId,
-        doctorId: req.user.id
-      })
+        doctorId: user?.id,
+      });
 
-      // Return structured response with bot_remarks and rating
       return {
         success: true,
         bot_remarks: structuredResponse.bot_remarks,
@@ -308,27 +332,27 @@ It depends on the Medical Areas/Skills given in the prompt, the more the doctor 
           statement: patientData.patient_statement,
           emotions_count: patientData.emotion_of_patient.length,
           skills_count: patientData.skills_to_evaluate.length,
-          has_previous_context: !!dto.response
+          has_previous_context: !!dto.response,
         },
         metadata: {
           timestamp: new Date().toISOString(),
           model_used: 'gemini-1.5-flash',
-          statement_id: dto.statementId
-        }
+          statement_id: dto.statementId,
+        },
       };
-
     } catch (error) {
       this.logger.error('Error in medical consultation:', error);
 
       return {
         success: false,
         error: error.message,
-        bot_remarks: "I apologize, but I'm unable to provide a consultation at this time due to a technical issue. Please try again or consult with a healthcare professional directly.",
+        bot_remarks:
+          "I apologize, but I'm unable to provide a consultation at this time due to a technical issue. Please try again or consult with a healthcare professional directly.",
         rating: 5, // Default moderate rating for errors
         metadata: {
           timestamp: new Date().toISOString(),
-          error_type: error.constructor.name
-        }
+          error_type: error.constructor.name,
+        },
       };
     }
   }
@@ -343,7 +367,9 @@ It depends on the Medical Areas/Skills given in the prompt, the more the doctor 
   /**
    * Method to get structured AI response for general queries
    */
-  async getStructuredResponse(query: string): Promise<{ bot_remarks: string; rating: number }> {
+  async getStructuredResponse(
+    query: string,
+  ): Promise<{ bot_remarks: string; rating: number }> {
     try {
       const prompt = `You are a AI agent that evaluate the response of the doctor against the given skills, doctor will give response against the statement of patient, the paitient statement will include the emotions of patient too. 
       Provide a structured response in JSON format:
@@ -366,16 +392,18 @@ Rating scale:
       const humanMessage = new HumanMessage({ content: prompt });
       const response = await this.model.invoke([humanMessage]);
 
-      const rawResponse = typeof response.content === 'string'
-        ? response.content
-        : response.content.toString();
+      const rawResponse =
+        typeof response.content === 'string'
+          ? response.content
+          : response.content.toString();
 
       return this.parseStructuredResponse(rawResponse);
     } catch (error) {
       this.logger.error('Error in structured response:', error);
       return {
-        bot_remarks: "I apologize, but I encountered an error processing your request. Please try again.",
-        rating: 5
+        bot_remarks:
+          'I apologize, but I encountered an error processing your request. Please try again.',
+        rating: 5,
       };
     }
   }
@@ -396,23 +424,29 @@ Rating scale:
   /**
    * Health check method
    */
-  async healthCheck(): Promise<{ status: string; model: string; timestamp: string }> {
+  async healthCheck(): Promise<{
+    status: string;
+    model: string;
+    timestamp: string;
+  }> {
     try {
       const testResponse = await this.model.invoke([
-        new HumanMessage({ content: "Hello, please respond with 'OK' to confirm you're working." })
+        new HumanMessage({
+          content: "Hello, please respond with 'OK' to confirm you're working.",
+        }),
       ]);
 
       return {
         status: 'healthy',
         model: 'gemini-1.5-flash',
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       };
     } catch (error) {
       this.logger.error('Health check failed:', error);
       return {
         status: 'unhealthy',
         model: 'gemini-1.5-flash',
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       };
     }
   }
