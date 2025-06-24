@@ -1,4 +1,4 @@
-import { IsOptional, IsNotEmpty, IsNumber } from 'class-validator';
+import { IsOptional, IsNotEmpty, IsNumber, IsArray } from 'class-validator';
 
 export class CreateStatementDto {
   @IsNotEmpty()
@@ -6,6 +6,11 @@ export class CreateStatementDto {
 
   @IsNumber()
   sectionId: number;
+  
+    @IsOptional()
+  @IsArray()
+  @IsNumber({}, { each: true })
+  emotionIds?: number[];
 }
 
 
@@ -17,4 +22,9 @@ export class UpdateStatementDto {
   @IsOptional()
   @IsNumber()
   sectionId?: number;
+
+   @IsOptional()
+   @IsArray()
+   @IsNumber({}, { each: true })
+   emotionIds?: number[];
 }

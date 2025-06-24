@@ -1,61 +1,90 @@
-// src/components/forms/LoginForm.tsx
-import { useState } from 'react';
-import { Eye, EyeOff } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
+import { useState } from 'react'
+import { Eye, EyeOff } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
-import authService from '@/services/auth.service';
-import { useNavigate, Link } from 'react-router-dom';
+} from '@/components/ui/card'
+import authService from '@/services/auth.service'
+import { useNavigate, Link } from 'react-router-dom'
+
+// Helper to decode JWT token
+const parseJwt = (token: string) => {
+  try {
+    const base64Url = token.split('.')[1]
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split('')
+        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join('')
+    )
+    return JSON.parse(jsonPayload)
+  } catch (err) {
+    console.error('Token decode error:', err)
+    return null
+  }
+}
 
 export function LoginForm() {
-  const [showPassword, setShowPassword] = useState(false);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const navigate = useNavigate();
+  const [showPassword, setShowPassword] = useState(false)
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  const navigate = useNavigate()
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
+    e.preventDefault()
+    setLoading(true)
+    setError('')
 
     try {
-      const credentials = { email, password };
-      const result = await authService.login(credentials);
+      const credentials = { email, password }
+      const result = await authService.login(credentials)
 
       if (result.success) {
-        const token = result.data.token;
-        const user = result.data.user;
+        const { token, user } = result.data
 
-        localStorage.setItem('token', token);
-        localStorage.setItem('user', JSON.stringify(user));
+        // Save to localStorage
+        localStorage.setItem('token', token)
+        localStorage.setItem('user', JSON.stringify(user))
+        localStorage.setItem('userId', user.id)
+        localStorage.setItem('email', user.email)
 
-        navigate('/dashboard');
+        // Decode token to get role
+        const decoded = parseJwt(token)
+        const role = decoded?.role || user.role || 'user'
+        localStorage.setItem('role', role)
+
+        // Navigate by role
+        if (role === 'admin') {
+          navigate('/dashboard')
+        } else {
+          navigate('/user')
+        }
       } else {
-        setError(result.message || 'Invalid credentials');
+        setError(result.message || 'Invalid credentials')
       }
     } catch (err) {
-      console.error('Login error:', err);
-      setError('Something went wrong. Please try again.');
+      console.error('Login error:', err)
+      setError('Something went wrong. Please try again.')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   return (
     <Card className="w-full max-w-[400px] mx-auto">
       <CardHeader className="space-y-1">
         <div className="flex items-center justify-center mb-6">
-          <img src="/logo.svg" alt="Patient Agent" className="h-8 w-8" />
+          <img src="/pa.jpg" alt="Patient Agent" className="h-8 w-8" />
           <span className="ml-2 text-2xl font-bold">Patient Agent</span>
         </div>
         <CardTitle className="text-2xl text-center">Sign In</CardTitle>
@@ -96,28 +125,37 @@ export function LoginForm() {
               </button>
             </div>
           </div>
+
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <Checkbox id="remember" />
-              <Label htmlFor="remember" className="text-sm">Remember me</Label>
+              <Label htmlFor="remember" className="text-sm">
+                Remember me
+              </Label>
             </div>
             <Link to="/forgot-password" className="text-sm text-blue-600 hover:underline">
               Forgot password?
             </Link>
           </div>
+
           {error && <p className="text-sm text-red-500">{error}</p>}
+
           <Button type="submit" className="w-full" disabled={loading}>
             {loading ? 'Signing in...' : 'Sign In'}
           </Button>
+
           <div className="text-center text-sm">
-            Don't have an account?{' '}
-            <Link to="/signup" className="text-blue-600 hover:underline">Sign up</Link>
+            Don&apos;t have an account?{' '}
+            <Link to="/signup" className="text-blue-600 hover:underline">
+              Sign up
+            </Link>
           </div>
+
           <p className="text-xs text-center text-muted-foreground">
             By signing in, you agree to our Terms of Service and Privacy Policy
           </p>
         </form>
       </CardContent>
     </Card>
-  );
+  )
 }

@@ -44,7 +44,7 @@ export class Statement extends Model {
   @BelongsTo(() => Section)
   section: Section;
 
-   @BelongsToMany(() => Section, () => joinstatementemotions)
+   @BelongsToMany(() => Emotions, () => joinstatementemotions)
       emotion: Emotions[]
 
      @HasOne(() => Response)

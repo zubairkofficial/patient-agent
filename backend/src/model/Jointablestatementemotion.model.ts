@@ -6,17 +6,17 @@ import { Section } from './section.model';
 @Table({ tableName: 'join_statement_emotions' })
 export class joinstatementemotions extends Model {
   @ForeignKey(() => Emotions)
-  @Unique
+  @Unique('statment-emotion')
   @Column
   emotionId: number;
 
   @ForeignKey(() => Statement)
-  @Unique
+  @Unique('statment-emotion')
   @Column
   statementId: number;
 
   @ForeignKey(() => Section)
-  @Unique
+  @Unique('statment-emotion')
   @Column
   sectionId: number;
 }

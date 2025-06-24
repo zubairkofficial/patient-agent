@@ -1,5 +1,5 @@
 import axios from "axios";
-import authService from "./auth.service";
+import authService from "./auth.service.ts";
 import { API_BASE_URL } from "../utils/constants.ts";
 
 const api = axios.create({

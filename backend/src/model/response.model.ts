@@ -9,6 +9,7 @@ import {
 import { IsNotEmpty } from 'class-validator';
 import { Doctor } from './doctorprofile.model';
 import { Statement } from './statement.model';
+import { string } from 'zod';
 
 @Table({
   tableName: 'response',
@@ -32,21 +33,26 @@ export class Response extends Model {
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
-    unique: true,
   })
   declare rating: number;
 
-    @ForeignKey(() => Statement)
-    @Column({
-      type: DataType.INTEGER,
-      allowNull: false,
-    })
-    declare statementId : number;
+  @Column({
+    type: DataType.TEXT,
+    allowNull: false,
+  })
+  declare botRemarks: string;
 
-      @ForeignKey(() => Doctor)
-      @Column({
-        type: DataType.INTEGER,
-        allowNull: false,
-      })
-      declare doctorId : number;
+  @ForeignKey(() => Statement)
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+  })
+  declare statementId: number;
+
+  @ForeignKey(() => Doctor)
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+  })
+  declare doctorId: number;
 }

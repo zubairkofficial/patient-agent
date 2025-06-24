@@ -16,6 +16,8 @@ import { RolesGuard } from '../guards/role.guard';
 import { Roles } from './auth/role.decoder';
 import { Role } from 'src/utils/roles.enum';
 import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
+import { Emotions } from 'src/model/emotions.model';
+import { required } from 'zod/dist/types/v4/core/util';
 
 @Controller('statement')
 export class StatementController {
@@ -29,7 +31,7 @@ export class StatementController {
   }
 
   @Get('get')
-  @Roles(Role.ADMIN, Role.USER)
+  @Roles(Role.ADMIN)
   @UseGuards(JwtAuthGuard, RolesGuard)
   findAll() {
     return this.statementService.findAll();
@@ -43,7 +45,7 @@ export class StatementController {
   }
 
   @Get('section/:sectionId')
-  @Roles(Role.ADMIN)
+  @Roles(Role.ADMIN, Role.USER)
   @UseGuards(JwtAuthGuard, RolesGuard)
   findBySection(@Param('sectionId', ParseIntPipe) sectionId: number) {
     return this.statementService.findBySectionId(sectionId);

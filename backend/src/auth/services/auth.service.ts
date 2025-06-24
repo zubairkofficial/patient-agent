@@ -65,7 +65,7 @@ export class AuthService {
   }
 
   async login(loginDto: LoginDto) {
-    this.logger.log('hello this is lola login', process.env.PORT, 'dsf');
+    this.logger.log('hello this is user login', process.env.PORT, 'dsf');
 
     const email = loginDto.email?.trim();
     const password = loginDto.password;
@@ -110,7 +110,7 @@ export class AuthService {
         email: user.email,
         firstName: user.firstName,
         lastName: user.lastName,
-      },
+        role: user.role      },
     };
   }
 

@@ -5,12 +5,12 @@ import { Skills } from './skills.model';
 @Table({ tableName: 'join_section_skills' })
 export class JoinSectionSkills extends Model {
   @ForeignKey(() => Section)
-  @Unique
+  @Unique('section-skills')
   @Column
   sectionId: number;
 
   @ForeignKey(() => Skills)
-  @Unique
+  @Unique('section-skills')
   @Column
   skillId: number;
 }
