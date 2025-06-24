@@ -1,7 +1,7 @@
 import UserLayout from '@/components/layout/UserLayout';
 import Home from './Home';
 import Profile from './Profile';
-import Settings from './Settings';
+// import Settings from './Settings';
 
 const userRoutes: any = {
   path: '/user',
@@ -9,7 +9,7 @@ const userRoutes: any = {
   children: [
     { path: 'home', element: <Home /> },
     { path: 'profile', element: <Profile /> },
-    { path: 'settings', element: <Settings /> },
+    // { path: 'settings', element: <Settings /> },
     { index: true, element: <Home /> },
   ],
 };
