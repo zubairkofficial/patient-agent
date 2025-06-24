@@ -260,6 +260,9 @@ It depends on the Medical Areas/Skills given in the prompt, the more the doctor 
       this.logger.log(
         `Starting medical consultation for statement ID: ${dto.statementId}, user: ${user?.id}`,
       );
+      console.log(
+        `Starting medical consultation for statement ID: ${dto.statementId}, user: ${user?.id}`,
+      );
 
       // Fetch patient data from database
       const statement = await Statement.findByPk(dto.statementId, {
@@ -274,6 +277,7 @@ It depends on the Medical Areas/Skills given in the prompt, the more the doctor 
         ],
       });
 
+      console.log("stateme tlola")
       if (!statement) {
         throw new Error(`Statement with ID ${dto.statementId} not found`);
       }
@@ -304,6 +308,7 @@ It depends on the Medical Areas/Skills given in the prompt, the more the doctor 
 
       // Get AI response from Gemini
       this.logger.log('Sending request to Gemini AI...');
+      console.log(`seding reuq`);
       const aiResponse = await this.model.invoke(messages);
 
       // Extract and parse the response content
@@ -342,6 +347,7 @@ It depends on the Medical Areas/Skills given in the prompt, the more the doctor 
       };
     } catch (error) {
       this.logger.error('Error in medical consultation:', error);
+      console.log('Error in medical consultation:', error);
 
       return {
         success: false,
