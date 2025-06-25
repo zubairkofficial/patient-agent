@@ -25,7 +25,7 @@ export class SectionController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   async create(@Body() body: any) {
     return this.sectionService.create(body);
-  }
+  } 
 
   @Get(':id/section')
   @Roles(Role.ADMIN, Role.USER)

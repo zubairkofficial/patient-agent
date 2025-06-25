@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -6,20 +6,21 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import sectionService from "@/services/section.service";
-import emotionService from "@/services/emotions.service";
-import skillsService from "@/services/skills.service";
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import SelectReact from "react-select";
+} from '@/components/ui/select';
+import SelectReact from 'react-select';
+
+import sectionService from '@/services/section.service';
+import emotionService from '@/services/emotions.service';
+import skillsService from '@/services/skills.service';
 
 interface Skill {
   id: number;
@@ -29,6 +30,7 @@ interface Skill {
 interface Section {
   id: number;
   title: string;
+  skillList?: Skill[];
 }
 
 interface Emotion {
@@ -37,20 +39,23 @@ interface Emotion {
 }
 
 interface StatementDialogProps {
-  mode: "add" | "edit";
+  mode: 'add' | 'edit';
   defaultValues?: {
-    emotionId: never[];
     statement: string;
     sectionId: number;
+    skill: number;
     emotionIds: number[];
   };
   onSubmit: (data: {
     statement: string;
-
     sectionId: number;
+    skill: number;
     emotionIds: number[];
   }) => void;
   trigger?: React.ReactNode;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  loading?: boolean;
 }
 
 export function StatementDialog({
@@ -61,24 +66,18 @@ export function StatementDialog({
   open: controlledOpen,
   onOpenChange,
   loading: controlledLoading,
-}: StatementDialogProps & {
-  open?: boolean;
-  onOpenChange?: (open: boolean) => void;
-  loading?: boolean;
-}) {
+}: StatementDialogProps) {
   const [open, setOpen] = useState(false);
-  const [statement, setStatement] = useState("");
+  const [statement, setStatement] = useState('');
   const [sectionId, setSectionId] = useState<number | null>(null);
+  const [skill, setSkill] = useState<number | null>(null);
   const [selectedEmotions, setSelectedEmotions] = useState<number[]>([]);
   const [sections, setSections] = useState<Section[]>([]);
-  const [skills, setSkills] = useState<Skill[]>([]);
   const [emotions, setEmotions] = useState<Emotion[]>([]);
   const [loading, setLoading] = useState(false);
 
-  // Use controlled open/loading if provided
   const isOpen = controlledOpen !== undefined ? controlledOpen : open;
-  const isLoading =
-    controlledLoading !== undefined ? controlledLoading : loading;
+  const isLoading = controlledLoading !== undefined ? controlledLoading : loading;
 
   useEffect(() => {
     if (isOpen) fetchData();
@@ -90,7 +89,6 @@ export function StatementDialog({
       const [sectionRes, emotionRes] = await Promise.all([
         sectionService.getAllSections(),
         emotionService.getAllEmotions(),
-        skillsService.getAllSkills(),
       ]);
 
       if (sectionRes.success) setSections(sectionRes.data);
@@ -99,10 +97,11 @@ export function StatementDialog({
       if (defaultValues) {
         setStatement(defaultValues.statement);
         setSectionId(defaultValues.sectionId);
+        setSkill(defaultValues.skill);
         setSelectedEmotions(defaultValues.emotionIds || []);
       }
-    } catch (error) {
-      console.error("Error fetching data:", error);
+    } catch (err) {
+      console.error('Error loading data:', err);
     } finally {
       setLoading(false);
     }
@@ -120,20 +119,18 @@ export function StatementDialog({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!statement || sectionId === null || selectedEmotions.length === 0) {
-      alert("Please fill out all fields.");
+    if (!statement || sectionId === null || skill === null || selectedEmotions.length === 0) {
       return;
     }
-    onSubmit({
-      statement,
-      sectionId,
-      emotionIds: selectedEmotions,
-    });
+    onSubmit({ statement, sectionId, skill, emotionIds: selectedEmotions });
     setOpen(false);
   };
 
+  const selectedSection = sections.find((s) => s.id === sectionId);
+  const filteredSkills = selectedSection?.skillList || [];
+
   return (
-    <Dialog open={isOpen} onOpenChange={onOpenChange ? onOpenChange : setOpen}>
+    <Dialog open={isOpen} onOpenChange={onOpenChange || setOpen}>
       <DialogTrigger asChild>
         {trigger || (
           <Button className="bg-orange-600 hover:bg-orange-700">
@@ -143,20 +140,18 @@ export function StatementDialog({
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>
-            {mode === "add" ? "Create Statement" : "Edit Statement"}
-          </DialogTitle>
+          <DialogTitle>{mode === 'add' ? 'Create Statement' : 'Edit Statement'}</DialogTitle>
           <DialogDescription>
-            {mode === "add"
-              ? "Add a new therapeutic statement."
-              : "Edit this therapeutic statement."}
+            {mode === 'add'
+              ? 'Add a new therapeutic statement.'
+              : 'Edit this therapeutic statement.'}
           </DialogDescription>
         </DialogHeader>
         {isLoading ? (
           <div className="py-8 text-center">Loading...</div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Statement */}
+            {/* Statement Input */}
             <div className="space-y-2">
               <label className="text-sm font-medium">Statement</label>
               <Textarea
@@ -165,17 +160,20 @@ export function StatementDialog({
                 required
               />
             </div>
+
             {/* Section Select */}
             <div className="space-y-2">
               <label className="text-sm font-medium">Section</label>
               <Select
-                value={sectionId?.toString() || ""}
-                onValueChange={(val) => setSectionId(Number(val))}
+                value={sectionId?.toString() || ''}
+                onValueChange={(val) => {
+                  const secId = Number(val);
+                  setSectionId(secId);
+                  setSkill(null); // reset skill when section changes
+                }}
               >
                 <SelectTrigger>
-                  <SelectValue
-                    placeholder={isLoading ? "Loading..." : "Select section"}
-                  />
+                  <SelectValue placeholder="Select section" />
                 </SelectTrigger>
                 <SelectContent>
                   {sections.map((section) => (
@@ -186,38 +184,61 @@ export function StatementDialog({
                 </SelectContent>
               </Select>
             </div>
-            {/* Emotions Multi-select (React Select) */}
+
+            {/* Skill Select */}
             <div className="space-y-2">
-              <label className="text-sm font-medium">Select Emotions</label>
+              <label className="text-sm font-medium">Skill</label>
+              <Select
+                value={skill?.toString() || ''}
+                onValueChange={(val) => setSkill(Number(val))}
+                disabled={!sectionId}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder={!sectionId ? 'Select section first' : 'Select skill'} />
+                </SelectTrigger>
+                <SelectContent>
+                  {filteredSkills.length > 0 ? (
+                    filteredSkills.map((sk) => (
+                      <SelectItem key={sk.id} value={sk.id.toString()}>
+                        {sk.title}
+                      </SelectItem>
+                    ))
+                  ) : (
+                    <div className="p-2 text-sm text-muted-foreground">
+                      {sectionId ? 'No skills found' : 'Please select a section'}
+                    </div>
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Emotions Multi-select */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Emotions</label>
               <SelectReact
                 isMulti
-                isLoading={isLoading}
                 options={emotionOptions}
+                isLoading={isLoading}
                 value={emotionOptions.filter((e) =>
                   selectedEmotions.includes(e.value)
                 )}
                 onChange={handleEmotionChange}
                 placeholder="Choose emotions"
                 className="text-sm"
-                classNamePrefix="react-select"
               />
             </div>
-            {/* Buttons */}
+
+            {/* Submit + Cancel */}
             <div className="flex justify-end gap-2">
               <Button
                 type="button"
                 variant="outline"
-                onClick={() =>
-                  onOpenChange ? onOpenChange(false) : setOpen(false)
-                }
+                onClick={() => (onOpenChange ? onOpenChange(false) : setOpen(false))}
               >
                 Cancel
               </Button>
-              <Button
-                type="submit"
-                className="bg-orange-600 hover:bg-orange-700"
-              >
-                {mode === "add" ? "Create" : "Update"}
+              <Button type="submit" className="bg-orange-600 hover:bg-orange-700">
+                {mode === 'add' ? 'Create' : 'Update'}
               </Button>
             </div>
           </form>

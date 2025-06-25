@@ -5,6 +5,7 @@ import { Lightbulb, ArrowLeft } from 'lucide-react';
 import * as React from 'react';
 import statementService from '@/services/statement.service';
 import responseService from '@/services/response.service';
+import { API_BASE_URL } from './../../../utils/constants';
 
 interface Emotion {
   id: number;
@@ -78,7 +79,7 @@ export default function StatementResponse() {
         statementId: statement.id,
       };
 
-      const aiRes = await fetch('http://localhost:3000/langgraph/ask', {
+      const aiRes = await fetch(`${API_BASE_URL}/langgraph/ask`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

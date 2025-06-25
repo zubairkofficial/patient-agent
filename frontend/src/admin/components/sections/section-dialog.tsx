@@ -26,6 +26,9 @@ interface SectionDialogProps {
     description: string
   }) => void
   trigger?: React.ReactNode
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  loading?: boolean;
 }
 
 interface Skill {
@@ -42,15 +45,11 @@ export function SectionDialog({
   open: controlledOpen,
   onOpenChange,
   loading: controlledLoading,
-}: SectionDialogProps & {
-  open?: boolean;
-  onOpenChange?: (open: boolean) => void;
-  loading?: boolean;
-}) {
+}: SectionDialogProps) {
   const [open, setOpen] = useState(false)
-  const [title, setTitle] = useState(defaultValues?.title || '')
-  const [selectedSkills, setSelectedSkills] = useState<string[]>(defaultValues?.skills || [])
-  const [description, setDescription] = useState(defaultValues?.description || '')
+  const [title, setTitle] = useState('')
+  const [selectedSkills, setSelectedSkills] = useState<string[]>([])
+  const [description, setDescription] = useState('')
   const [skills, setSkills] = useState<Skill[]>([])
   const [loadingSkills, setLoadingSkills] = useState(false)
 
@@ -58,12 +57,17 @@ export function SectionDialog({
   const isOpen = controlledOpen !== undefined ? controlledOpen : open;
   const isLoading = controlledLoading !== undefined ? controlledLoading : loadingSkills;
 
+  // Fetch all skills on mount (so we can always show all options)
+  useEffect(() => {
+    fetchSkills();
+  }, []);
+
+  // Reset form fields when dialog opens or defaultValues change
   useEffect(() => {
     if (isOpen) {
       setTitle(defaultValues?.title || '')
       setSelectedSkills(defaultValues?.skills || [])
       setDescription(defaultValues?.description || '')
-      fetchSkills()
     }
     // eslint-disable-next-line
   }, [isOpen, defaultValues])
@@ -76,13 +80,16 @@ export function SectionDialog({
     setLoadingSkills(false)
   }
 
+  // Map skill IDs to full skill objects for display
+  const selectedSkillObjects = skills.filter((s) => selectedSkills.includes(s.id));
+
   const skillOptions = skills.map((s) => ({
     value: s.id,
     label: s.title,
   }))
 
   const handleSkillChange = (selected: any) => {
-    const ids = selected.map((s: any) => s.value)
+    const ids = selected ? selected.map((s: any) => s.value) : []
     setSelectedSkills(ids)
   }
 
@@ -93,7 +100,8 @@ export function SectionDialog({
       return
     }
     onSubmit({ title, skills: selectedSkills, description })
-    setOpen(false)
+    if (onOpenChange) onOpenChange(false)
+    else setOpen(false)
   }
 
   return (
@@ -144,6 +152,21 @@ export function SectionDialog({
               className="text-sm"
               classNamePrefix="react-select"
             />
+            {/* Show selected skills as chips below the select, like emotions in statements */}
+            {selectedSkillObjects.length > 0 ? (
+              <div className="flex flex-wrap gap-1 mt-2">
+                {selectedSkillObjects.map((skill) => (
+                  <span
+                    key={skill.id}
+                    className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full"
+                  >
+                    {skill.title}
+                  </span>
+                ))}
+              </div>
+            ) : (
+              <span className="text-muted-foreground">—</span>
+            )}
           </div>
           {/* Description */}
           <div className="space-y-2">

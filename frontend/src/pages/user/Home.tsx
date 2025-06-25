@@ -74,7 +74,7 @@ export default function Home() {
       </div>
 
       {/* Sections */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {sections.map((section) => (
           <Card key={section.id} className="border-t-4 border-blue-500">
             <CardHeader className="flex flex-row items-center gap-3 pb-2">

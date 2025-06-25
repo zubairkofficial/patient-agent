@@ -55,7 +55,7 @@ export default function DashboardPage() {
           <StatsCard
             title="Total Skills"
             value={counts.skills.toString()}
-            description="+2 this week"
+            description="+1 this week"
             icon={Brain}
             iconClassName="text-blue-600"
           />
@@ -69,14 +69,14 @@ export default function DashboardPage() {
           <StatsCard
             title="Sections"
             value={counts.sections.toString()}
-            description="No change"
+            description="+1 this week"
             icon={Layers}
             iconClassName="text-purple-600"
           />
           <StatsCard
             title="Total Statements"
             value={counts.statements.toString()}
-            description="+12 this week"
+            description="+1 this week"
             icon={MessageSquare}
             iconClassName="text-orange-600"
           />

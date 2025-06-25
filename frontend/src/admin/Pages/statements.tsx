@@ -22,6 +22,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import statementService from "@/services/statement.service";
 import skillsService from "@/services/skills.service";
 import sectionService from "@/services/section.service";
+import emotionsService from "@/services/emotions.service";
 
 interface Emotion {
   id: number;
@@ -31,8 +32,7 @@ interface Emotion {
 interface Statement {
   id: number;
   statement: string;
-
-  emotion?: Emotion[]; // ✅ updated key to match API response
+  emotion?: Emotion[];
   sectionId: string;
   createdAt: string;
   updatedAt: string;
@@ -51,6 +51,7 @@ interface Section {
 export default function StatementsPage() {
   const [statements, setStatements] = useState<Statement[]>([]);
   const [sections, setSections] = useState<Section[]>([]);
+  const [emotions, setEmotions] = useState<Emotion[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<number | null>(null);
@@ -61,6 +62,7 @@ export default function StatementsPage() {
   useEffect(() => {
     fetchStatements();
     fetchSections();
+    fetchEmotions();
   }, []);
 
   const fetchStatements = async () => {
@@ -72,12 +74,17 @@ export default function StatementsPage() {
     }
   };
 
-  
-
   const fetchSections = async () => {
     const response = await sectionService.getAllSections();
     if (response.success) {
       setSections(response.data);
+    }
+  };
+
+  const fetchEmotions = async () => {
+    const response = await emotionsService.getAllEmotions();
+    if (response.success) {
+      setEmotions(response.data);
     }
   };
 
@@ -165,7 +172,7 @@ export default function StatementsPage() {
               Manage therapeutic statements and guidance
             </p>
           </div>
-          <StatementDialog mode="add" onSubmit={handleCreate} />
+          <StatementDialog mode="add" onSubmit={handleCreate} emotions={emotions} />
         </div>
 
         {/* Search */}
@@ -233,7 +240,7 @@ export default function StatementsPage() {
                                   ? editData.emotion.map((e: any) => e.id)
                                   : [],
                                 sectionId: editData.section?.id || Number(editData.sectionId),
-                                emotionId: [], // Remove emotionId dropdown, but keep prop for type
+                                emotionId: [],
                               }
                             : {
                                 statement: s.statement,
@@ -248,6 +255,7 @@ export default function StatementsPage() {
                           if (!open) handleEditClose();
                         }}
                         loading={editLoading}
+                        emotions={emotions}
                         trigger={
                           <Button
                             variant="ghost"

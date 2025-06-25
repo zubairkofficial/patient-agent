@@ -5,18 +5,18 @@ import { Section } from './section.model';
 
 @Table({ tableName: 'join_statement_emotions' })
 export class joinstatementemotions extends Model {
-  @ForeignKey(() => Emotions)
   @Unique('statment-emotion')
+  @ForeignKey(() => Emotions)
   @Column
   emotionId: number;
 
-  @ForeignKey(() => Statement)
   @Unique('statment-emotion')
+  @ForeignKey(() => Statement)
   @Column
   statementId: number;
 
-  @ForeignKey(() => Section)
   @Unique('statment-emotion')
+  @ForeignKey(() => Section)
   @Column
   sectionId: number;
 }
