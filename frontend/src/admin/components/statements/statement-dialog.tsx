@@ -43,13 +43,11 @@ interface StatementDialogProps {
   defaultValues?: {
     statement: string;
     sectionId: number;
-    skill: number;
     emotionIds: number[];
   };
   onSubmit: (data: {
     statement: string;
     sectionId: number;
-    skill: number;
     emotionIds: number[];
   }) => void;
   trigger?: React.ReactNode;
@@ -70,7 +68,6 @@ export function StatementDialog({
   const [open, setOpen] = useState(false);
   const [statement, setStatement] = useState('');
   const [sectionId, setSectionId] = useState<number | null>(null);
-  const [skill, setSkill] = useState<number | null>(null);
   const [selectedEmotions, setSelectedEmotions] = useState<number[]>([]);
   const [sections, setSections] = useState<Section[]>([]);
   const [emotions, setEmotions] = useState<Emotion[]>([]);
@@ -93,11 +90,12 @@ export function StatementDialog({
 
       if (sectionRes.success) setSections(sectionRes.data);
       if (emotionRes.success) setEmotions(emotionRes.data);
+      console.log('Sections:', sectionRes.data);
+      console.log('Emotions:', emotionRes.data);
 
       if (defaultValues) {
         setStatement(defaultValues.statement);
         setSectionId(defaultValues.sectionId);
-        setSkill(defaultValues.skill);
         setSelectedEmotions(defaultValues.emotionIds || []);
       }
     } catch (err) {
@@ -119,10 +117,10 @@ export function StatementDialog({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!statement || sectionId === null || skill === null || selectedEmotions.length === 0) {
+    if (!statement || sectionId === null || selectedEmotions.length === 0) {
       return;
     }
-    onSubmit({ statement, sectionId, skill, emotionIds: selectedEmotions });
+    onSubmit({ statement, sectionId, emotionIds: selectedEmotions });
     setOpen(false);
   };
 
@@ -169,7 +167,6 @@ export function StatementDialog({
                 onValueChange={(val) => {
                   const secId = Number(val);
                   setSectionId(secId);
-                  setSkill(null); // reset skill when section changes
                 }}
               >
                 <SelectTrigger>
@@ -181,33 +178,6 @@ export function StatementDialog({
                       {section.title}
                     </SelectItem>
                   ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Skill Select */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Skill</label>
-              <Select
-                value={skill?.toString() || ''}
-                onValueChange={(val) => setSkill(Number(val))}
-                disabled={!sectionId}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder={!sectionId ? 'Select section first' : 'Select skill'} />
-                </SelectTrigger>
-                <SelectContent>
-                  {filteredSkills.length > 0 ? (
-                    filteredSkills.map((sk) => (
-                      <SelectItem key={sk.id} value={sk.id.toString()}>
-                        {sk.title}
-                      </SelectItem>
-                    ))
-                  ) : (
-                    <div className="p-2 text-sm text-muted-foreground">
-                      {sectionId ? 'No skills found' : 'Please select a section'}
-                    </div>
-                  )}
                 </SelectContent>
               </Select>
             </div>

@@ -115,6 +115,7 @@ export default function StatementsPage() {
   };
 
   const handleUpdate = async (id: number, data: any) => {
+    console.log("Updating statement with ID:", id, "Data:", data);
     const response = await statementService.updateStatement(id, data);
     if (response.success) {
       fetchStatements();
@@ -172,7 +173,9 @@ export default function StatementsPage() {
               Manage therapeutic statements and guidance
             </p>
           </div>
-          <StatementDialog mode="add" onSubmit={handleCreate} emotions={emotions} />
+          <StatementDialog mode="add" onSubmit={handleCreate}
+          // emotions={emotions}
+          />
         </div>
 
         {/* Search */}
@@ -235,19 +238,17 @@ export default function StatementsPage() {
                         defaultValues={
                           editOpenId === s.id && editData
                             ? {
-                                statement: editData.statement,
-                                emotionIds: Array.isArray(editData.emotion)
-                                  ? editData.emotion.map((e: any) => e.id)
-                                  : [],
-                                sectionId: editData.section?.id || Number(editData.sectionId),
-                                emotionId: [],
-                              }
+                              statement: editData.statement,
+                              emotionIds: Array.isArray(editData.emotion)
+                                ? editData.emotion.map((e: any) => e.id)
+                                : [],
+                              sectionId: editData.section?.id || Number(editData.sectionId),
+                            }
                             : {
-                                statement: s.statement,
-                                emotionIds: s.emotion?.map((e) => e.id) || [],
-                                sectionId: Number(s.sectionId),
-                                emotionId: [],
-                              }
+                              statement: s.statement,
+                              emotionIds: s.emotion?.map((e) => e.id) || [],
+                              sectionId: Number(s.sectionId),
+                            }
                         }
                         onSubmit={(data) => handleUpdate(s.id, data)}
                         open={editOpenId === s.id}
@@ -255,7 +256,7 @@ export default function StatementsPage() {
                           if (!open) handleEditClose();
                         }}
                         loading={editLoading}
-                        emotions={emotions}
+                        // emotions={emotions}
                         trigger={
                           <Button
                             variant="ghost"

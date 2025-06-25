@@ -17,7 +17,7 @@ interface SectionDialogProps {
   mode: 'add' | 'edit'
   defaultValues?: {
     title: string
-    skills: string[] // skill IDs
+    skills: string[] // skill IDs as strings
     description: string
   }
   onSubmit: (data: {
@@ -26,14 +26,13 @@ interface SectionDialogProps {
     description: string
   }) => void
   trigger?: React.ReactNode
-  open?: boolean;
-  onOpenChange?: (open: boolean) => void;
-  loading?: boolean;
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
+  loading?: boolean
 }
 
 interface Skill {
-  id: string
-  name: string
+  id: number | string
   title: string
 }
 
@@ -53,40 +52,52 @@ export function SectionDialog({
   const [skills, setSkills] = useState<Skill[]>([])
   const [loadingSkills, setLoadingSkills] = useState(false)
 
-  // Use controlled open/loading if provided
-  const isOpen = controlledOpen !== undefined ? controlledOpen : open;
-  const isLoading = controlledLoading !== undefined ? controlledLoading : loadingSkills;
+  const isOpen = controlledOpen !== undefined ? controlledOpen : open
+  const isLoading = controlledLoading !== undefined ? controlledLoading : loadingSkills
 
-  // Fetch all skills on mount (so we can always show all options)
   useEffect(() => {
-    fetchSkills();
-  }, []);
+    fetchSkills()
+  }, [])
 
-  // Reset form fields when dialog opens or defaultValues change
   useEffect(() => {
-    if (isOpen) {
-      setTitle(defaultValues?.title || '')
-      setSelectedSkills(defaultValues?.skills || [])
-      setDescription(defaultValues?.description || '')
+    if (isOpen && defaultValues) {
+      setTitle(defaultValues.title || '')
+      setSelectedSkills((defaultValues.skills || []).map((id) => String(id)))
+      setDescription(defaultValues.description || '')
     }
-    // eslint-disable-next-line
   }, [isOpen, defaultValues])
 
   const fetchSkills = async () => {
-    setLoadingSkills(true)
-    const res = await skillsService.getAllSkills()
-    if (res.success) setSkills(res.data)
-    else console.error('Failed to load skills:', res.message)
-    setLoadingSkills(false)
+    try {
+      setLoadingSkills(true)
+      const res = await skillsService.getAllSkills()
+      if (res.success) {
+        setSkills(res.data)
+      } else {
+        console.error('Failed to load skills:', res.message)
+      }
+    } catch (err) {
+      console.error('Error fetching skills:', err)
+    } finally {
+      setLoadingSkills(false)
+    }
   }
 
-  // Map skill IDs to full skill objects for display
-  const selectedSkillObjects = skills.filter((s) => selectedSkills.includes(s.id));
-
-  const skillOptions = skills.map((s) => ({
-    value: s.id,
+  // Convert all skills to select options with string IDs
+  const allSkillOptions = skills.map((s) => ({
+    value: String(s.id),
     label: s.title,
   }))
+
+  // Selected options to display
+  const selectedSkillOptions = allSkillOptions.filter((option) =>
+    selectedSkills.includes(option.value)
+  )
+
+  // Only show unselected skills in dropdown
+  const availableSkillOptions = allSkillOptions.filter(
+    (option) => !selectedSkills.includes(option.value)
+  )
 
   const handleSkillChange = (selected: any) => {
     const ids = selected ? selected.map((s: any) => s.value) : []
@@ -105,7 +116,7 @@ export function SectionDialog({
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={onOpenChange ? onOpenChange : setOpen}>
+    <Dialog open={isOpen} onOpenChange={onOpenChange || setOpen}>
       <DialogTrigger asChild>
         {trigger || (
           <Button className="bg-purple-600 hover:bg-purple-700">
@@ -122,75 +133,68 @@ export function SectionDialog({
               : 'Update the section information below.'}
           </DialogDescription>
         </DialogHeader>
+
         {isLoading ? (
           <div className="py-8 text-center">Loading...</div>
         ) : (
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Title */}
-          <div className="space-y-2">
-            <label htmlFor="title" className="text-sm font-medium">
-              Title
-            </label>
-            <Input
-              id="title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Enter section title"
-              required
-            />
-          </div>
-          {/* Multi-select with react-select */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Select Skills</label>
-            <Select
-              isMulti
-              isLoading={isLoading}
-              options={skillOptions}
-              value={skillOptions.filter((s) => selectedSkills.includes(s.value))}
-              onChange={handleSkillChange}
-              placeholder="Choose skills"
-              className="text-sm"
-              classNamePrefix="react-select"
-            />
-            {/* Show selected skills as chips below the select, like emotions in statements */}
-            {selectedSkillObjects.length > 0 ? (
-              <div className="flex flex-wrap gap-1 mt-2">
-                {selectedSkillObjects.map((skill) => (
-                  <span
-                    key={skill.id}
-                    className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full"
-                  >
-                    {skill.title}
-                  </span>
-                ))}
-              </div>
-            ) : (
-              <span className="text-muted-foreground">—</span>
-            )}
-          </div>
-          {/* Description */}
-          <div className="space-y-2">
-            <label htmlFor="description" className="text-sm font-medium">
-              Description
-            </label>
-            <Textarea
-              id="description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Enter section description"
-              required
-            />
-          </div>
-          {/* Buttons */}
-          <div className="flex justify-end gap-2">
-            <Button type="button" variant="outline" onClick={() => (onOpenChange ? onOpenChange(false) : setOpen(false))}>
-              Cancel
-            </Button>
-            <Button type="submit" className="bg-purple-600 hover:bg-purple-700">
-              {mode === 'add' ? 'Create Section' : 'Update Section'}
-            </Button>
-          </div>
-        </form>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Title */}
+            <div className="space-y-2">
+              <label htmlFor="title" className="text-sm font-medium">
+                Title
+              </label>
+              <Input
+                id="title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="Enter section title"
+                required
+              />
+            </div>
+
+            {/* Skills */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Select Skills</label>
+              <Select
+                isMulti
+                isLoading={isLoading}
+                options={[...selectedSkillOptions, ...availableSkillOptions]}
+                value={selectedSkillOptions}
+                onChange={handleSkillChange}
+                placeholder="Choose skills"
+                className="text-sm"
+                classNamePrefix="react-select"
+              />
+            </div>
+
+            {/* Description */}
+            <div className="space-y-2">
+              <label htmlFor="description" className="text-sm font-medium">
+                Description
+              </label>
+              <Textarea
+                id="description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Enter section description"
+                required
+              />
+            </div>
+
+            {/* Buttons */}
+            <div className="flex justify-end gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => (onOpenChange ? onOpenChange(false) : setOpen(false))}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" className="bg-purple-600 hover:bg-purple-700">
+                {mode === 'add' ? 'Create Section' : 'Update Section'}
+              </Button>
+            </div>
+          </form>
         )}
       </DialogContent>
     </Dialog>

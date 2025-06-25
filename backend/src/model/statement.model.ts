@@ -8,11 +8,13 @@ import {
   BelongsTo,
   BelongsToMany,
   HasOne,
+  BeforeUpdate,
 } from 'sequelize-typescript';
 import { Section } from './section.model';
 import { Emotions } from './emotions.model';
 import { joinstatementemotions } from './Jointablestatementemotion.model';
 import { Response } from './response.model';
+import { Op } from 'sequelize';
 
 @Table({
   tableName: 'statement',
@@ -40,13 +42,15 @@ export class Statement extends Model {
   })
   declare sectionId: number;
 
-    // ✅ Relationship to Section
+  // ✅ Relationship to Section
   @BelongsTo(() => Section)
   section: Section;
 
-   @BelongsToMany(() => Emotions, () => joinstatementemotions)
-      emotion: Emotions[]
+  @BelongsToMany(() => Emotions, () => joinstatementemotions)
+  emotion: Emotions[]
 
-     @HasOne(() => Response)
-        response: Response;
+  @HasOne(() => Response)
+  response: Response;
+
+
 }

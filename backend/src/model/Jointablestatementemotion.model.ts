@@ -1,4 +1,4 @@
-import { Column, Model, Table, ForeignKey, Unique } from 'sequelize-typescript';
+import { Column, Model, Table, ForeignKey, Unique, DataType } from 'sequelize-typescript';
 import { Emotions } from './emotions.model';
 import { Statement } from './statement.model';
 import { Section } from './section.model';
@@ -7,16 +7,24 @@ import { Section } from './section.model';
 export class joinstatementemotions extends Model {
   @Unique('statment-emotion')
   @ForeignKey(() => Emotions)
-  @Column
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+  })
   emotionId: number;
 
   @Unique('statment-emotion')
   @ForeignKey(() => Statement)
-  @Column
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+  })
   statementId: number;
 
-  @Unique('statment-emotion')
   @ForeignKey(() => Section)
-  @Column
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+  })
   sectionId: number;
 }

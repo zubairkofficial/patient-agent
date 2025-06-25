@@ -8,6 +8,7 @@ import { Emotions } from 'src/model/emotions.model';
 import { Response } from 'src/model/response.model';
 import { Section } from 'src/model/section.model';
 import { Skills } from 'src/model/skills.model';
+import { stat } from 'fs';
 
 @Injectable()
 export class StatementService {
@@ -106,8 +107,45 @@ export class StatementService {
   }
 
   async update(id: number, dto: UpdateStatementDto) {
-    const statement = await this.findById(id);
-    return statement.update(dto);
+    const statement: any = await this.statementModel.findByPk(id);
+
+
+    if (!statement) {
+      throw new NotFoundException('Statement not found');
+    }
+    await joinstatementemotions.destroy({
+      where: {
+        statementId: statement.id,
+      },
+    });
+
+    statement.statement = dto.statement;
+    statement.sectionId = dto.sectionId;
+
+    await statement.save();
+
+    if (dto.emotionIds && dto.emotionIds.length > 0) {
+      for (const emotionId of dto.emotionIds) {
+        console.log(`Inserting emotionId ${emotionId} for statementId ${statement.id}`);
+        try {
+          await joinstatementemotions.create({
+            emotionId,
+            statementId: statement.id,
+            sectionId: dto.sectionId,
+          });
+        } catch (error) {
+          console.log(
+            `Failed to insert emotionId ${emotionId} for statementId ${statement.id}:`,
+            error,
+          );
+          // Continue to the next emotionId
+          continue;
+        }
+      }
+    }
+
+    return statement;
+
   }
 
   async delete(id: number) {

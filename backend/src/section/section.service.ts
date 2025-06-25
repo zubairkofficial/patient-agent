@@ -14,7 +14,7 @@ export class SectionService {
   constructor(
     @InjectModel(Section) private sectionModel: typeof Section,
     @InjectModel(Skills) private skillsModel: typeof Skills,
-  ) {}
+  ) { }
 
   async create(sectionDto: SectionDto) {
     const section = await this.sectionModel.create({
@@ -69,14 +69,37 @@ export class SectionService {
 
   async update(id: number, sectionDto: any) {
     const section = await this.sectionModel.findByPk(id);
-    if (!section) throw new NotFoundException('Section not found');
 
-    await section.update(sectionDto);
-    if (sectionDto.skillIds) {
-      const skills = await this.skillsModel.findAll({
-        where: { id: sectionDto.skillId },
-      });
-      await section.$set('skillList', skills);
+    if (!section) {
+      throw new NotFoundException('Statement not found');
+    }
+    await JoinSectionSkills.destroy({
+      where: {
+        sectionId: section.id,
+      },
+    });
+    
+    section.title = sectionDto.title;
+    section.description = sectionDto.description;
+    await section.save();
+
+    if (sectionDto.skills && sectionDto.skills.length > 0) {
+      for (const skillId of sectionDto.skills) {
+        console.log(`Inserting skillId ${skillId} for sectionId ${section.id}`);
+        try {
+          await JoinSectionSkills.create({
+            skillId,
+            sectionId: section.id,
+          });
+        } catch (error) {
+          console.log(
+            `Failed to insert skillId ${skillId} for sectionId ${section.id}:`,
+            error,
+          );
+          // Continue to the next skillId
+          continue;
+        }
+      }
     }
     return section;
   }
